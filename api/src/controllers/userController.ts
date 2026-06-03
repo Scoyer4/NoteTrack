@@ -74,14 +74,43 @@ export const userController = {
     }
   },
 
+   // Obtener perfil a través del ID
   getById: async (req: Request<{ id: string }>, res: Response) => {
     try {
       const { id } = req.params;
+
       const user = await userRepository.findById(id);
       if (!user) return res.status(404).json({ error: "Usuario no encontrado" });
       return res.json(user);
     } catch (error) {
       return res.status(500).json({ error: "Error al obtener usuario." });
+    }
+  },
+
+   // Obtener email a través del 'username'
+  getEmailByUsername: async (req: Request<{ username: string }>, res: Response) => {
+    try {
+      const { username } = req.params;
+
+      const user = await userRepository.findByUsername(username);
+      if (!user) return res.status(404).json({ error: "Nombre de usuario no encontrado." });
+      return res.json({ email: user.email });
+    } catch (error) {
+      console.error("Error buscando email por username: ", error);
+      return res.status(500).json({ error: "Error al buscar el email." })
+    }
+  },
+
+   // Comprobar que el email existe
+  checkEmailExists: async (req: Request, res: Response) => {
+    try {
+      const email = (req.query.email as string) ?? '';
+      if (!email) res.status(400).json({ error: "Email requerido." });
+      const exists = await userRepository.existsByEmail(email);
+      return res.json({ exists })
+    } catch (error) {
+      console.error("Error al verificar el correo.", error);
+      return res.status(500).json({ error: "Error al verificar el correo." })
     }
   }
 }
