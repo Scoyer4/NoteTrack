@@ -29,6 +29,14 @@ app.use(express.urlencoded({ extended: true }));
 
  // Rutas
 import authRoutes from '@/routes/authRoutes';
+import folderRoutes from '@/routes/folderRoutes';
+import notesRoutes from '@/routes/notesRoutes';
+import userRoutes from '@/routes/userRoutes';
+import taskRoutes from '@/routes/taskRoutes';
 
 app.use("/api/auth", authRoutes);
+app.use("/api/folders", folderRoutes);
+app.use("/api/notes", notesRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/tasks", taskRoutes);
 

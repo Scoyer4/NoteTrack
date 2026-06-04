@@ -3,6 +3,7 @@ import { notesRepository } from "@/repositories/notesRepository";
 import { getErrorMessage } from "@/lib/errors";
 
 export const notesController = {
+   // Obtener todas las notas
   getAll: async (req: Request, res: Response) => {
     try {
       const userId = req.user!.id;
@@ -17,7 +18,7 @@ export const notesController = {
       return res.status(500).json({ error: getErrorMessage(error) });
     }
   },
-
+   // Obtener una nota por ID
   getById: async (req: Request<{ id: string }>, res: Response) => {
     try {
       const { id } = req.params;
@@ -34,7 +35,7 @@ export const notesController = {
       return res.json(500).json({ error: getErrorMessage(error) })
     }
   },
-
+   // Obtener las notas ancladas
   getPinned: async (req: Request, res: Response) => {
     try {
       const userId = req.user!.id;
@@ -46,7 +47,7 @@ export const notesController = {
       return res.status(500).json({ error: getErrorMessage(error) });
     }
   },
-
+   // Obtener las notas archivadas
   getArchived: async (req: Request, res: Response) => {
     try {
       const userId = req.user!.id;
@@ -58,7 +59,7 @@ export const notesController = {
       return res.status(500).json({ error: getErrorMessage(error) });
     }
   },
-
+   // Obtener las notas eliminadas
   getDeleted: async (req: Request, res: Response) => {
     try {
       const userId = req.user!.id;
@@ -70,7 +71,7 @@ export const notesController = {
       return res.status(500).json({ error: getErrorMessage(error) });
     }
   },
-
+   // Crear una nota nueva
   create: async (req: Request, res: Response) => {
     try {
       const userId = req.user!.id;
@@ -91,10 +92,10 @@ export const notesController = {
       return res.status(500).json({ error: getErrorMessage(error) })
     }
   },
-
+   // Actualizar una nota
   update: async (req: Request<{ id: string }>, res: Response) => {
     try {
-      const { id } = req.body;
+      const { id } = req.params;
       const userId = req.user!.id;
       const { title, content, color, folder_id, is_pinned, is_archived } = req.body;
 
@@ -118,7 +119,7 @@ export const notesController = {
       return res.status(500).json({ error: getErrorMessage(error) })
     }
   },
-
+   // Anclar una nota
   pin: async (req: Request<{ id: string }>, res: Response) => {
     try {
       const { id } = req.params;
@@ -140,7 +141,7 @@ export const notesController = {
       return res.status(500).json({ error: getErrorMessage(error) });
     }
   },
-
+   // Archivar una nota
   archive: async (req: Request<{ id: string }>, res: Response) => {
     try {
       const { id } = req.params;
@@ -162,7 +163,7 @@ export const notesController = {
       return res.status(500).json({ error: getErrorMessage(error) });
     }
   },
-
+   // Marcar una nota como eliminada
   softDelete: async (req: Request<{ id: string }>, res: Response) => {
     try {
       const { id } = req.params;
@@ -184,7 +185,7 @@ export const notesController = {
       return res.status(500).json({ error: getErrorMessage(error) });
     }
   },
-
+   // Reestablecer una nota
   restore: async (req: Request<{ id: string }>, res: Response) => {
     try {
       const { id } = req.params;
@@ -206,7 +207,7 @@ export const notesController = {
       return res.status(500).json({ error: getErrorMessage(error) });
     }
   },
-
+   // Eliminar definitivamente una nota
   hardDelete: async (req: Request<{ id: string }>, res: Response) => {
     try {
       const { id } = req.params;
