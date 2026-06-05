@@ -55,5 +55,5 @@ export const folderRepository = {
       .delete()
       .eq("id", id);
     if (error) throw new Error(error.message);
-  }
-}
+  },
+};
