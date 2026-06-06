@@ -5,7 +5,7 @@ export const userRepository = {
   create: async (user: UserInsert): Promise<User> => {
     const { data, error } = await supabase
       .from("users")
-      .upsert(user)
+      .insert(user)
       .select()
       .single();
 

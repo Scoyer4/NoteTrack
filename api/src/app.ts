@@ -1,6 +1,7 @@
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import "./types";
 
 dotenv.config();
 
@@ -42,3 +43,11 @@ app.use("/api/users", userRoutes);
 app.use("/api/tasks", taskRoutes);
 app.use("/api/tags", tagRoutes);
 
+app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
+  console.error(err.stack);
+  res.status(500).json({ error: 'Algo salió mal en el servidor' });
+});
+
+app.listen(config.PORT, () => {
+  console.log(`Server is running on port http://localhost:${config.PORT}`);
+});

@@ -30,7 +30,7 @@ export const notesRepository = {
   create: async (notes: NotesInsert): Promise<Notes> => {
     const { data, error } = await supabase
       .from("notes")
-      .upsert(notes)
+      .insert(notes)
       .select()
       .single();
     if (error) throw new Error(error.message);
