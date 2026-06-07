@@ -1,0 +1,25 @@
+.shell {
+  display: flex;
+  min-height: 100vh;
+  background: #09090b;
+}
+
+.main {
+  flex: 1;
+  margin-left: 224px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+
+  /* Subtle top-right glow to add depth */
+  background-image: radial-gradient(
+    ellipse 55% 35% at 80% -10%,
+    rgba(139, 92, 246, 0.07) 0%,
+    transparent 60%
+  );
+}
+
+.content {
+  flex: 1;
+  padding: 36px 44px;
+}

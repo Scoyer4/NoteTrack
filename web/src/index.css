@@ -1,0 +1,80 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  /* Core */
+  --bg:            #09090b;
+  --surface:       #18181b;
+  --surface-2:     #1f1f23;
+  --sidebar-bg:    #0c0c0e;
+
+  /* Brand */
+  --primary:       #8b5cf6;
+  --primary-hover: #7c3aed;
+  --primary-dim:   rgba(139, 92, 246, 0.12);
+  --primary-text:  #a78bfa;
+
+  /* Text */
+  --text:          #f4f4f5;
+  --text-muted:    #71717a;
+  --text-faint:    #3f3f46;
+
+  /* Borders */
+  --border:        #27272a;
+  --border-light:  #3f3f46;
+
+  /* Shadows */
+  --shadow-sm:     0 1px 2px rgba(0,0,0,0.4);
+  --shadow:        0 2px 8px rgba(0,0,0,0.5);
+  --shadow-lg:     0 8px 32px rgba(0,0,0,0.6);
+
+  /* States */
+  --danger:        #ef4444;
+  --danger-dim:    rgba(239, 68, 68, 0.1);
+  --success:       #22c55e;
+  --success-dim:   rgba(34, 197, 94, 0.1);
+
+  /* Radii */
+  --radius-sm:     5px;
+  --radius:        8px;
+  --radius-lg:     12px;
+
+  /* Note card tints (dark-adjusted) */
+  --note-default:  #18181b;
+  --note-yellow:   rgba(234, 179, 8,   0.1);
+  --note-green:    rgba(34,  197, 94,  0.1);
+  --note-blue:     rgba(59,  130, 246, 0.1);
+  --note-purple:   rgba(139, 92,  246, 0.12);
+  --note-pink:     rgba(236, 72,  153, 0.1);
+  --note-red:      rgba(239, 68,  68,  0.1);
+  --note-orange:   rgba(249, 115, 22,  0.1);
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+input, button, textarea, select {
+  font-family: inherit;
+}
+
+::-webkit-scrollbar        { width: 5px; height: 5px; }
+::-webkit-scrollbar-track  { background: transparent; }
+::-webkit-scrollbar-thumb  { background: var(--border-light); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
