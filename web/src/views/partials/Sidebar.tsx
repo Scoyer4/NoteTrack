@@ -6,6 +6,7 @@ const navMain = [
   { to: '/',         label: 'Todas las notas', end: true },
   { to: '/pinned',   label: 'Fijadas' },
   { to: '/archived', label: 'Archivadas' },
+  { to: '/trash',    label: 'Papelera' },
 ];
 
 const navOrg = [

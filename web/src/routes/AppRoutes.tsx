@@ -1,9 +1,15 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
-import ProtectedRoute    from '../views/partials/ProtectedRoute';
-import Layout            from '../views/partials/Layout';
-import LoginPage         from '../views/completes/LoginPage';
-import RegisterPage      from '../views/completes/RegisterPage';
-import AuthCallbackPage  from '../views/completes/AuthCallbackPage';
+import ProtectedRoute   from '../views/partials/ProtectedRoute';
+import Layout           from '../views/partials/Layout';
+import LoginPage        from '../views/completes/LoginPage';
+import RegisterPage     from '../views/completes/RegisterPage';
+import AuthCallbackPage from '../views/completes/AuthCallbackPage';
+import NotesPage        from '../views/completes/NotesPage';
+import PinnedPage       from '../views/completes/PinnedPage';
+import ArchivedPage     from '../views/completes/ArchivedPage';
+import TrashPage        from '../views/completes/TrashPage';
+import FoldersPage      from '../views/completes/FoldersPage';
+import TagsPage         from '../views/completes/TagsPage';
 
 export default function AppRoutes() {
   return (
@@ -19,11 +25,12 @@ export default function AppRoutes() {
           </ProtectedRoute>
         }
       >
-        <Route index         element={<div>Notas — próximamente</div>} />
-        <Route path="pinned"   element={<div>Fijadas — próximamente</div>} />
-        <Route path="archived" element={<div>Archivadas — próximamente</div>} />
-        <Route path="folders"  element={<div>Carpetas — próximamente</div>} />
-        <Route path="tags"     element={<div>Etiquetas — próximamente</div>} />
+        <Route index           element={<NotesPage />} />
+        <Route path="pinned"   element={<PinnedPage />} />
+        <Route path="archived" element={<ArchivedPage />} />
+        <Route path="trash"    element={<TrashPage />} />
+        <Route path="folders"  element={<FoldersPage />} />
+        <Route path="tags"     element={<TagsPage />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />

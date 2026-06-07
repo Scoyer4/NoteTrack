@@ -1,0 +1,267 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  animation: pageIn 0.2s ease;
+}
+
+/* ── Header ─────────────────────────────────────────────────────────────────── */
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.02em;
+}
+
+.newBtn {
+  padding: 9px 20px;
+  background: linear-gradient(135deg, #9333ea, #7c3aed);
+  border: none;
+  border-radius: var(--radius);
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  box-shadow: 0 2px 14px rgba(139, 92, 246, 0.35);
+  transition: opacity 0.15s, transform 0.1s;
+}
+
+.newBtn:hover  { opacity: 0.88; transform: translateY(-1px); }
+.newBtn:active { transform: scale(0.97); }
+
+/* ── Create form ─────────────────────────────────────────────────────────────── */
+
+.form {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  animation: slideDown 0.18s ease;
+}
+
+.nameInput {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-size: 0.95rem;
+  font-family: inherit;
+  padding: 10px 14px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.nameInput::placeholder { color: var(--text-faint); }
+.nameInput:focus { border-color: var(--primary); }
+
+.formRow {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.pickerGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pickerLabel {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-faint);
+}
+
+/* Icon grid */
+.iconGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.iconBtn {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, transform 0.1s;
+}
+
+.iconBtn:hover { background: rgba(255,255,255,0.06); transform: scale(1.1); }
+.iconActive    { border-color: var(--primary) !important; background: var(--primary-dim) !important; }
+
+/* Color grid */
+.colorGrid {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.colorDot {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform 0.1s, box-shadow 0.12s;
+}
+
+.colorDot:hover  { transform: scale(1.2); }
+.colorActive     { border-color: #fff !important; box-shadow: 0 0 0 1px rgba(255,255,255,0.4); transform: scale(1.15); }
+
+.createBtn {
+  align-self: flex-end;
+  padding: 9px 22px;
+  background: linear-gradient(135deg, #9333ea, #7c3aed);
+  border: none;
+  border-radius: var(--radius);
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.createBtn:disabled { opacity: 0.4; cursor: default; }
+.createBtn:hover:not(:disabled) { opacity: 0.88; }
+
+/* ── Folders grid ────────────────────────────────────────────────────────────── */
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  transition: border-color 0.15s, transform 0.15s;
+  animation: cardIn 0.2s ease both;
+}
+
+.card:hover { border-color: var(--border-light); transform: translateY(-1px); }
+
+.cardIcon {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius);
+  border: 1px solid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  flex-shrink: 0;
+}
+
+.cardInfo {
+  flex: 1;
+  overflow: hidden;
+}
+
+.folderName {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cardActions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.viewBtn {
+  padding: 5px 10px;
+  background: var(--primary-dim);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  border-radius: var(--radius-sm);
+  color: var(--primary-text);
+  font-size: 0.75rem;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.12s;
+}
+
+.viewBtn:hover { background: var(--primary); color: #fff; }
+
+.deleteBtn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--text-faint);
+  font-size: 0.7rem;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+
+.deleteBtn:hover { background: var(--danger-dim); color: var(--danger); }
+
+/* ── Skeleton & empty ────────────────────────────────────────────────────────── */
+
+.skeleton {
+  height: 76px;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(90deg, var(--surface) 25%, var(--surface-2) 50%, var(--surface) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  border: 1px solid var(--border);
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 80px 24px;
+  text-align: center;
+  gap: 12px;
+}
+
+.emptyIcon  { font-size: 3rem; opacity: 0.4; }
+.emptyTitle { font-size: 1.1rem; font-weight: 600; color: var(--text-muted); }
+.emptyText  { font-size: 0.875rem; color: var(--text-faint); max-width: 300px; line-height: 1.6; }
+
+/* ── Animations ──────────────────────────────────────────────────────────────── */
+
+@keyframes pageIn   { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes cardIn   { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes slideDown{ from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes shimmer  { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }

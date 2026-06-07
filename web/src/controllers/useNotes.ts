@@ -49,5 +49,24 @@ export function useNotes() {
     return updated;
   }, []);
 
-  return { notes, loading, error, fetchNotes, createNote, updateNote, softDeleteNote, hardDeleteNote, pinNote };
+  /** Toggles is_archived and removes from current list */
+  const archiveNote = useCallback(async (id: string) => {
+    const updated = await notesService.archive(id);
+    setNotes(prev => prev.filter(n => n.id !== id));
+    return updated;
+  }, []);
+
+  /** Restores a deleted note and removes from current list */
+  const restoreNote = useCallback(async (id: string) => {
+    const updated = await notesService.restore(id);
+    setNotes(prev => prev.filter(n => n.id !== id));
+    return updated;
+  }, []);
+
+  return {
+    notes, loading, error,
+    fetchNotes, createNote, updateNote,
+    softDeleteNote, hardDeleteNote,
+    pinNote, archiveNote, restoreNote,
+  };
 }
