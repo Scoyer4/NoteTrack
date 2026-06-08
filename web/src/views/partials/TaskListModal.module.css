@@ -159,6 +159,29 @@
   width: 14px;
 }
 
+.dateInput {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  padding: 2px 4px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.dateInput:focus {
+  outline: none;
+  border-bottom-color: var(--brand);
+}
+
+.taskDate {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
 .item:hover .dragHandle { opacity: 1; }
 
 .checkbox {

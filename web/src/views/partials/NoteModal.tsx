@@ -126,6 +126,7 @@ export default function NoteModal({ note: initialNote, onClose, onCreate, onUpda
       for (const tagId of selectedTagIds) {
         await tagsService.addToNote(created.id, tagId);
       }
+      onClose();
     } catch { /* silent */ } finally {
       setCreating(false);
     }

@@ -18,8 +18,11 @@ export function useTasks() {
     }
   }, []);
 
-  const createTask = useCallback(async (noteId: string, title: string) => {
-    const created = await tasksService.create(noteId, { title });
+  const createTask = useCallback(async (noteId: string, title: string, dueDate?: string) => {
+    const created = await tasksService.create(noteId, { 
+      title, 
+      due_date: dueDate
+    });
     setTasks(prev => [...prev, created]);
     return created;
   }, []);

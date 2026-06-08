@@ -1,0 +1,203 @@
+.page {
+  padding: 2rem;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+.heading {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 1.5rem;
+}
+
+.calendarWrap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.5rem;
+  flex: 1;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.loading {
+  padding: 2rem;
+  color: var(--text-muted);
+}
+
+/* ── FullCalendar overrides ── */
+
+:global(.fc) {
+  color: var(--text);
+  font-family: inherit;
+}
+
+/* Cabecera del calendario */
+:global(.fc .fc-toolbar) {
+  margin-bottom: 1.25rem;
+}
+
+:global(.fc .fc-toolbar-title) {
+  font-size: 1.1rem !important;
+  font-weight: 600;
+  color: var(--text);
+  text-transform: capitalize;
+}
+
+/* Botones de navegación */
+:global(.fc .fc-button) {
+  background: transparent !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text-muted) !important;
+  font-size: 0.8rem !important;
+  font-family: inherit !important;
+  padding: 0.3rem 0.75rem !important;
+  border-radius: 6px !important;
+  transition: all 0.15s ease !important;
+  text-transform: capitalize !important;
+}
+
+:global(.fc .fc-button:hover) {
+  background: var(--border) !important;
+  color: var(--text) !important;
+  border-color: var(--border) !important;
+}
+
+:global(.fc .fc-button-active),
+:global(.fc .fc-button-primary:not(:disabled).fc-button-active) {
+  background: #7C5FFF !important;
+  border-color: #7C5FFF !important;
+  color: #ffffff !important;
+}
+
+:global(.fc .fc-button:focus) {
+  box-shadow: none !important;
+}
+
+/* Cabecera de días de la semana */
+:global(.fc .fc-col-header-cell) {
+  background: transparent;
+  border-color: var(--border) !important;
+  padding: 0.5rem 0;
+}
+
+:global(.fc .fc-col-header-cell-cushion) {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-decoration: none !important;
+}
+
+/* Celdas de días */
+:global(.fc .fc-daygrid-day) {
+  border-color: var(--border) !important;
+  background: transparent;
+}
+
+:global(.fc .fc-daygrid-day:hover) {
+  background: rgba(124, 95, 255, 0.04);
+}
+
+:global(.fc .fc-daygrid-day-number) {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  text-decoration: none !important;
+  padding: 6px 8px;
+}
+
+/* Día actual */
+:global(.fc .fc-day-today) {
+  background: rgba(124, 95, 255, 0.08) !important;
+}
+
+:global(.fc .fc-day-today .fc-daygrid-day-number) {
+  color: #7C5FFF;
+  font-weight: 700;
+}
+
+/* Días fuera del mes actual */
+:global(.fc .fc-day-other .fc-daygrid-day-number) {
+  color: var(--text-muted);
+  opacity: 0.4;
+}
+
+/* Eventos */
+:global(.fc .fc-event) {
+  cursor: pointer;
+  border: none !important;
+  border-radius: 5px !important;
+  padding: 2px 6px !important;
+  font-size: 0.78rem !important;
+  font-weight: 500;
+  transition: opacity 0.15s ease;
+}
+
+:global(.fc .fc-event:hover) {
+  opacity: 0.85;
+}
+
+:global(.fc .fc-event-title) {
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Número de eventos extra (+2 more) */
+:global(.fc .fc-daygrid-more-link) {
+  color: #7C5FFF;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+/* Línea entre semanas */
+:global(.fc td),
+:global(.fc th) {
+  border-color: var(--border) !important;
+}
+
+/* Scroll en vista semanal */
+:global(.fc .fc-scroller) {
+  overflow: hidden !important;
+}
+
+/* Fondo general del calendario */
+:global(.fc-theme-standard td),
+:global(.fc-theme-standard th),
+:global(.fc-theme-standard .fc-scrollgrid) {
+  border-color: var(--border) !important;
+  background: transparent !important;
+}
+
+/* Eliminar fondo blanco de la cuadrícula */
+:global(.fc .fc-daygrid-body),
+:global(.fc .fc-scrollgrid-sync-table),
+:global(.fc .fc-col-header),
+:global(.fc table) {
+  background: transparent !important;
+  width: 100% !important;
+}
+
+/* Forzar fondo oscuro en todas las celdas */
+:global(.fc .fc-daygrid-day-frame) {
+  background: transparent !important;
+  min-height: 80px;
+}
+
+/* Scroll container */
+:global(.fc .fc-scroller-liquid-absolute) {
+  background: transparent !important;
+  position: relative !important;
+  overflow: visible !important;
+}
+
+:global(.fc .fc-scroller) {
+  overflow: visible !important;
+  height: auto !important;
+}

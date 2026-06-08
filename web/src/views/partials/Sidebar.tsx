@@ -9,6 +9,11 @@ const navMain = [
   { to: '/trash',    label: 'Papelera' },
 ];
 
+const navTasks = [
+  { to: '/lists',    label: 'Mis listas' },
+  { to: '/calendar', label: 'Calendario' },
+];
+
 const navOrg = [
   { to: '/tags', label: 'Etiquetas' },
 ];
@@ -40,6 +45,23 @@ export default function Sidebar() {
               key={item.to}
               to={item.to}
               end={item.end}
+              className={({ isActive }) =>
+                `${styles.navItem} ${isActive ? styles.active : ''}`
+              }
+            >
+              {item.label}
+            </NavLink>
+          ))}
+        </nav>
+      </div>
+
+      <div className={styles.navSection}>
+        <span className={styles.label}>Tareas</span>
+        <nav>
+          {navTasks.map(item => (
+            <NavLink
+              key={item.to}
+              to={item.to}
               className={({ isActive }) =>
                 `${styles.navItem} ${isActive ? styles.active : ''}`
               }

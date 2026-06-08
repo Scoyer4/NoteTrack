@@ -156,5 +156,5 @@ export const tasksService = {
 export const usersService = {
   me:     () => request<User>('/users/me'),
   update: (data: Partial<Pick<User, 'username' | 'full_name' | 'avatar_url'>>) =>
-    request<{ user: User }>('/users/me', { method: 'PUT', body: JSON.stringify(data) }),
+    request<{ user: User }>('/users/me', { method: 'PATCH', body: JSON.stringify(data) }),
 };

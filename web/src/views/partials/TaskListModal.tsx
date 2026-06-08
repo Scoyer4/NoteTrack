@@ -30,6 +30,7 @@ export default function TaskListModal({ note: initialNote, onClose, onCreate, on
   const [title,      setTitle]      = useState(initialNote?.title ?? '');
   const [color,      setColor]      = useState<NoteColor>(initialNote?.color ?? 'default');
   const [newItem,    setNewItem]    = useState('');
+  const [newDueDate, setNewDueDate] = useState('');
   const [creating,   setCreating]   = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
 
@@ -122,31 +123,32 @@ export default function TaskListModal({ note: initialNote, onClose, onCreate, on
   }
 
   async function handleAddItem() {
-    if (!newItem.trim()) return;
+  if (!newItem.trim()) return;
 
-    let currentNote = note;
+  let currentNote = note;
 
-    if (!currentNote) {
-      setCreating(true);
-      try {
-        const finalTitle = title.trim() || 'Lista de tareas';
-        setTitle(finalTitle);
-        currentNote = await onCreate({ title: finalTitle, content: CHECKLIST_MARKER, color });
-        setNote(currentNote);
-        for (const tagId of selectedTagIds) {
-          await tagsService.addToNote(currentNote.id, tagId);
-        }
-      } catch {
-        setCreating(false);
-        return;
+  if (!currentNote) {
+    setCreating(true);
+    try {
+      const finalTitle = title.trim() || 'Lista de tareas';
+      setTitle(finalTitle);
+      currentNote = await onCreate({ title: finalTitle, content: CHECKLIST_MARKER, color });
+      setNote(currentNote);
+      for (const tagId of selectedTagIds) {
+        await tagsService.addToNote(currentNote.id, tagId);
       }
+    } catch {
       setCreating(false);
+      return;
     }
-
-    await createTask(currentNote.id, newItem.trim());
-    setNewItem('');
-    newItemRef.current?.focus();
+    setCreating(false);
   }
+
+  await createTask(currentNote.id, newItem.trim(), newDueDate || undefined); // ← añade newDueDate
+  setNewItem('');
+  setNewDueDate(''); // ← limpia la fecha después de añadir
+  newItemRef.current?.focus();
+}
 
   const saveLabelClass =
     saveStatus === 'saving' ? styles.statusSaving :
@@ -210,6 +212,13 @@ export default function TaskListModal({ note: initialNote, onClose, onCreate, on
                   <span className={`${styles.itemLabel} ${task.is_completed ? styles.itemDone : ''}`}>
                     {task.title}
                   </span>
+                  {task.due_date && (
+                  <span className={styles.taskDate}>
+                      {new Date(task.due_date).toLocaleDateString('es-ES', {
+                      day: 'numeric', month: 'short'
+                    })}
+                  </span>
+                )}
                   <button
                     className={styles.removeBtn}
                     onClick={() => removeTask(task.id)}
@@ -228,6 +237,13 @@ export default function TaskListModal({ note: initialNote, onClose, onCreate, on
                   disabled={creating}
                   onChange={e => setNewItem(e.target.value)}
                   onKeyDown={e => { if (e.key === 'Enter') handleAddItem(); }}
+                />
+                <input
+                  type="date"
+                  className={styles.dateInput}
+                  value={newDueDate}
+                  onChange={e => setNewDueDate(e.target.value)}
+                  title="Fecha límite (opcional)"
                 />
               </div>
             </>

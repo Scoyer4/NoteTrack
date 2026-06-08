@@ -2,7 +2,6 @@ import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useNotes } from '../../controllers/useNotes';
 import NoteCard      from '../partials/NoteCard';
 import NoteModal     from '../partials/NoteModal';
-import TaskListModal from '../partials/TaskListModal';
 import ConfirmDialog from '../partials/ConfirmDialog';
 import type { Note } from '../../types';
 import { CHECKLIST_MARKER } from '../../types';
@@ -18,26 +17,22 @@ export default function NotesPage() {
   } = useNotes();
 
   const [noteModal, setNoteModal] = useState<Note | 'new' | null>(null);
-  const [listModal, setListModal] = useState<Note | 'new' | null>(null);
   const [confirmId, setConfirmId] = useState<string | null>(null);
 
   const [search, setSearch] = useState('');
   const searchDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Persistent order for position stability + drag-and-drop
   const [localOrder, setLocalOrder] = useState<string[]>(() => {
     try { return JSON.parse(localStorage.getItem(ORDER_KEY) ?? '[]'); }
     catch { return []; }
   });
   const orderInitRef = useRef(false);
 
-  // Drag state
   const [draggedId,  setDraggedId]  = useState<string | null>(null);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
 
   useEffect(() => { fetchNotes(); }, [fetchNotes]);
 
-  // On first successful load, seed localOrder from server order (if nothing saved)
   useEffect(() => {
     if (!orderInitRef.current && !loading && notes.length > 0) {
       orderInitRef.current = true;
@@ -50,7 +45,6 @@ export default function NotesPage() {
     }
   }, [loading, notes]);
 
-  // Apply localOrder on top of server notes; new notes (not yet in order) go to front
   const orderedNotes = useMemo(() => {
     if (localOrder.length === 0) return notes;
     const map = new Map(notes.map(n => [n.id, n]));
@@ -62,8 +56,8 @@ export default function NotesPage() {
     return [...map.values(), ...result];
   }, [notes, localOrder]);
 
-  const pinned  = orderedNotes.filter(n => n.is_pinned);
-  const regular = orderedNotes.filter(n => !n.is_pinned);
+  const pinned  = orderedNotes.filter(n => n.is_pinned  && n.content !== CHECKLIST_MARKER);
+  const regular = orderedNotes.filter(n => !n.is_pinned && n.content !== CHECKLIST_MARKER);
 
   const handleSearch = useCallback((value: string) => {
     setSearch(value);
@@ -74,14 +68,11 @@ export default function NotesPage() {
   }, [fetchNotes]);
 
   function handleEdit(note: Note) {
-    if (note.content === CHECKLIST_MARKER) setListModal(note);
-    else setNoteModal(note);
+    setNoteModal(note);
   }
 
   function handleCloseModal() {
     setNoteModal(null);
-    setListModal(null);
-    // Re-fetch to refresh note data (tags, etc.); localOrder preserves display position
     fetchNotes(search ? { search } : undefined);
   }
 
@@ -89,8 +80,6 @@ export default function NotesPage() {
     await softDeleteNote(id);
     setConfirmId(null);
   }
-
-  // ── Drag handlers ──────────────────────────────────────────────────────────
 
   function handleDragStart(noteId: string) {
     setDraggedId(noteId);
@@ -104,7 +93,6 @@ export default function NotesPage() {
     if (!draggedId || draggedId === targetId) {
       setDraggedId(null); setDragOverId(null); return;
     }
-    // Prevent dropping between pinned ↔ regular sections
     const dragged = notes.find(n => n.id === draggedId);
     const target  = notes.find(n => n.id === targetId);
     if (!dragged || !target || dragged.is_pinned !== target.is_pinned) {
@@ -124,8 +112,6 @@ export default function NotesPage() {
   function handleDragEnd() {
     setDraggedId(null); setDragOverId(null);
   }
-
-  // ── Render helpers ─────────────────────────────────────────────────────────
 
   function renderCards(group: Note[]) {
     return group.map(note => (
@@ -156,7 +142,6 @@ export default function NotesPage() {
 
   return (
     <div className={styles.page}>
-      {/* Top bar */}
       <div className={styles.topBar}>
         <div className={styles.searchWrap}>
           <span className={styles.searchIcon}>⌕</span>
@@ -175,13 +160,6 @@ export default function NotesPage() {
             onClick={() => setNoteModal('new')}
           >
             + Nueva nota
-          </button>
-          <button
-            id="notes-new-list-btn"
-            className={`${styles.newBtn} ${styles.newListBtn}`}
-            onClick={() => setListModal('new')}
-          >
-            ☑ Nueva lista
           </button>
         </div>
       </div>
@@ -229,15 +207,6 @@ export default function NotesPage() {
       {noteModal !== null && (
         <NoteModal
           note={noteModal === 'new' ? null : noteModal}
-          onClose={handleCloseModal}
-          onCreate={createNote}
-          onUpdate={updateNote}
-        />
-      )}
-
-      {listModal !== null && (
-        <TaskListModal
-          note={listModal === 'new' ? null : listModal}
           onClose={handleCloseModal}
           onCreate={createNote}
           onUpdate={updateNote}

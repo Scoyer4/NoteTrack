@@ -9,6 +9,8 @@ import PinnedPage       from '../views/completes/PinnedPage';
 import ArchivedPage     from '../views/completes/ArchivedPage';
 import TrashPage        from '../views/completes/TrashPage';
 import TagsPage         from '../views/completes/TagsPage';
+import ListsPage        from '../views/completes/ListsPage';
+import CalendarPage     from '../views/completes/CalendarPage';
 
 export default function AppRoutes() {
   return (
@@ -29,6 +31,8 @@ export default function AppRoutes() {
         <Route path="archived" element={<ArchivedPage />} />
         <Route path="trash"    element={<TrashPage />} />
         <Route path="tags"     element={<TagsPage />} />
+        <Route path="lists"      element={<ListsPage />} />
+        <Route path="calendar"   element={<CalendarPage />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />
