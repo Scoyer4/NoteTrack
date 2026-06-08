@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import type { Note, NoteColor, Tag } from '../../types';
+import { CHECKLIST_MARKER } from '../../types';
+import { useTasks } from '../../controllers/useTasks';
 import { tagsService } from '../../services/api';
-import styles from './NoteModal.module.css';
+import styles from './TaskListModal.module.css';
 
 interface ColorOption { value: NoteColor; label: string; dot: string }
 
@@ -16,22 +18,20 @@ const COLORS: ColorOption[] = [
   { value: 'orange',  label: 'Naranja',      dot: '#f97316' },
 ];
 
-export interface NoteModalProps {
+export interface TaskListModalProps {
   note?: Note | null;
   onClose: () => void;
-  onCreate: (data: { title: string; content?: string; color?: NoteColor }) => Promise<Note>;
-  onUpdate: (id: string, data: Partial<Pick<Note, 'title' | 'content' | 'color'>>) => Promise<Note>;
+  onCreate: (data: { title: string; content: string; color?: NoteColor }) => Promise<Note>;
+  onUpdate: (id: string, data: Partial<Pick<Note, 'title' | 'color'>>) => Promise<Note>;
 }
 
-type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
-
-export default function NoteModal({ note: initialNote, onClose, onCreate, onUpdate }: NoteModalProps) {
+export default function TaskListModal({ note: initialNote, onClose, onCreate, onUpdate }: TaskListModalProps) {
   const [note,       setNote]       = useState<Note | null>(initialNote ?? null);
-  const [title,      setTitle]      = useState(initialNote?.title    ?? '');
-  const [content,    setContent]    = useState(initialNote?.content  ?? '');
+  const [title,      setTitle]      = useState(initialNote?.title ?? '');
   const [color,      setColor]      = useState<NoteColor>(initialNote?.color ?? 'default');
-  const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
+  const [newItem,    setNewItem]    = useState('');
   const [creating,   setCreating]   = useState(false);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
 
   const [availableTags,  setAvailableTags]  = useState<Tag[]>([]);
   const [selectedTagIds, setSelectedTagIds] = useState<Set<string>>(
@@ -39,9 +39,18 @@ export default function NoteModal({ note: initialNote, onClose, onCreate, onUpda
   );
   const [showTagPicker, setShowTagPicker] = useState(false);
 
+  const { tasks, loading: loadingTasks, fetchTasks, createTask, toggleTask, removeTask } = useTasks();
   const debounceRef  = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const newItemRef   = useRef<HTMLInputElement>(null);
   const tagPickerRef = useRef<HTMLDivElement>(null);
   const isEdit       = note !== null;
+
+  useEffect(() => {
+    if (initialNote?.id) fetchTasks(initialNote.id);
+  // Only run on mount. fetchTasks is stable (useCallback with []).
+  // initialNote never changes — it's a prop captured at mount time.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     tagsService.getAll().then(setAvailableTags).catch(() => {});
@@ -66,13 +75,13 @@ export default function NoteModal({ note: initialNote, onClose, onCreate, onUpda
 
   useEffect(() => () => { if (debounceRef.current) clearTimeout(debounceRef.current); }, []);
 
-  const scheduleSave = useCallback((newTitle: string, newContent: string) => {
+  const scheduleSave = useCallback((newTitle: string) => {
     if (!note) return;
     if (debounceRef.current) clearTimeout(debounceRef.current);
     setSaveStatus('saving');
     debounceRef.current = setTimeout(async () => {
       try {
-        const updated = await onUpdate(note.id, { title: newTitle, content: newContent });
+        const updated = await onUpdate(note.id, { title: newTitle });
         setNote(updated);
         setSaveStatus('saved');
         setTimeout(() => setSaveStatus('idle'), 2000);
@@ -84,12 +93,7 @@ export default function NoteModal({ note: initialNote, onClose, onCreate, onUpda
 
   function handleTitleChange(val: string) {
     setTitle(val);
-    scheduleSave(val, content);
-  }
-
-  function handleContentChange(val: string) {
-    setContent(val);
-    scheduleSave(title, val);
+    scheduleSave(val);
   }
 
   async function handleColorChange(newColor: NoteColor) {
@@ -117,18 +121,31 @@ export default function NoteModal({ note: initialNote, onClose, onCreate, onUpda
     });
   }
 
-  async function handleCreate() {
-    if (!title.trim() && !content.trim()) return;
-    setCreating(true);
-    try {
-      const created = await onCreate({ title, content, color });
-      setNote(created);
-      for (const tagId of selectedTagIds) {
-        await tagsService.addToNote(created.id, tagId);
+  async function handleAddItem() {
+    if (!newItem.trim()) return;
+
+    let currentNote = note;
+
+    if (!currentNote) {
+      setCreating(true);
+      try {
+        const finalTitle = title.trim() || 'Lista de tareas';
+        setTitle(finalTitle);
+        currentNote = await onCreate({ title: finalTitle, content: CHECKLIST_MARKER, color });
+        setNote(currentNote);
+        for (const tagId of selectedTagIds) {
+          await tagsService.addToNote(currentNote.id, tagId);
+        }
+      } catch {
+        setCreating(false);
+        return;
       }
-    } catch { /* silent */ } finally {
       setCreating(false);
     }
+
+    await createTask(currentNote.id, newItem.trim());
+    setNewItem('');
+    newItemRef.current?.focus();
   }
 
   const saveLabelClass =
@@ -145,7 +162,14 @@ export default function NoteModal({ note: initialNote, onClose, onCreate, onUpda
       >
         {/* Header */}
         <div className={styles.header}>
-          <span className={styles.mode}>{isEdit ? 'Editando nota' : 'Nueva nota'}</span>
+          <input
+            className={styles.titleInput}
+            placeholder="Título de la lista…"
+            value={title}
+            onChange={e => handleTitleChange(e.target.value)}
+            autoFocus
+            maxLength={200}
+          />
           <div className={styles.headerRight}>
             {isEdit && saveStatus !== 'idle' && (
               <span className={`${styles.saveStatus} ${saveLabelClass}`}>
@@ -158,27 +182,7 @@ export default function NoteModal({ note: initialNote, onClose, onCreate, onUpda
           </div>
         </div>
 
-        {/* Title */}
-        <input
-          id="note-modal-title"
-          className={styles.titleInput}
-          placeholder="Título de la nota…"
-          value={title}
-          onChange={e => handleTitleChange(e.target.value)}
-          autoFocus
-          maxLength={200}
-        />
-
-        {/* Content */}
-        <textarea
-          id="note-modal-content"
-          className={styles.contentArea}
-          placeholder="Escribe algo…"
-          value={content}
-          onChange={e => handleContentChange(e.target.value)}
-        />
-
-        {/* Selected tag chips */}
+        {/* Selected tags */}
         {selectedTagIds.size > 0 && (
           <div className={styles.tagChips}>
             {availableTags.filter(t => selectedTagIds.has(t.id)).map(tag => (
@@ -190,8 +194,48 @@ export default function NoteModal({ note: initialNote, onClose, onCreate, onUpda
           </div>
         )}
 
-        {/* Tools row */}
-        <div className={styles.tools}>
+        {/* Task list */}
+        <div className={styles.listBody}>
+          {loadingTasks ? (
+            <p className={styles.loading}>Cargando…</p>
+          ) : (
+            <>
+              {tasks.map(task => (
+                <div key={task.id} className={styles.item}>
+                  <span className={styles.dragHandle}>⠿</span>
+                  <button
+                    className={`${styles.checkbox} ${task.is_completed ? styles.checked : ''}`}
+                    onClick={() => toggleTask(task.id, task.is_completed)}
+                  />
+                  <span className={`${styles.itemLabel} ${task.is_completed ? styles.itemDone : ''}`}>
+                    {task.title}
+                  </span>
+                  <button
+                    className={styles.removeBtn}
+                    onClick={() => removeTask(task.id)}
+                    title="Eliminar"
+                  >✕</button>
+                </div>
+              ))}
+
+              <div className={styles.addRow}>
+                <span className={styles.addIcon}>+</span>
+                <input
+                  ref={newItemRef}
+                  className={styles.addInput}
+                  placeholder="Elemento de lista"
+                  value={newItem}
+                  disabled={creating}
+                  onChange={e => setNewItem(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter') handleAddItem(); }}
+                />
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Toolbar */}
+        <div className={styles.toolbar}>
           <div className={styles.colorRow}>
             {COLORS.map(c => (
               <button
@@ -200,7 +244,6 @@ export default function NoteModal({ note: initialNote, onClose, onCreate, onUpda
                 style={{ background: c.dot }}
                 title={c.label}
                 onClick={() => handleColorChange(c.value)}
-                aria-label={`Color: ${c.label}`}
               />
             ))}
           </div>
@@ -231,21 +274,9 @@ export default function NoteModal({ note: initialNote, onClose, onCreate, onUpda
               )}
             </div>
           )}
-        </div>
 
-        {/* Create button — only in create mode */}
-        {!isEdit && (
-          <div className={styles.createRow}>
-            <button
-              id="note-modal-create"
-              className={styles.createBtn}
-              onClick={handleCreate}
-              disabled={creating || (!title.trim() && !content.trim())}
-            >
-              {creating ? 'Creando…' : 'Crear nota'}
-            </button>
-          </div>
-        )}
+          <button className={styles.closeBtnToolbar} onClick={onClose}>Cerrar</button>
+        </div>
       </div>
     </div>
   );

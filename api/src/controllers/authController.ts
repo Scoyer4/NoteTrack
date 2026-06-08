@@ -78,6 +78,32 @@ export const authController = {
     }
   },
 
+  refresh: async (req: Request, res: Response) => {
+    const { refresh_token } = req.body;
+
+    if (!refresh_token) {
+      return res.status(400).json({ error: 'refresh_token es obligatorio.' });
+    }
+
+    try {
+      const { data, error } = await supabase.auth.refreshSession({ refresh_token });
+
+      if (error || !data.session) {
+        return res.status(401).json({ error: 'No se pudo renovar la sesión.' });
+      }
+
+      return res.status(200).json({
+        session: {
+          access_token:  data.session.access_token,
+          refresh_token: data.session.refresh_token,
+          expires_at:    data.session.expires_at,
+        }
+      });
+    } catch (error) {
+      return res.status(500).json({ error: getErrorMessage(error) });
+    }
+  },
+
   logout: async (req: Request, res: Response) => {
     return res.status(200).json({
       message: 'Sesión cerrada correctamente.'

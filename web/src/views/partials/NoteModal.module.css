@@ -179,6 +179,104 @@
 .folderSelect:focus  { border-color: var(--primary); }
 .folderSelect option { background: var(--surface-2); }
 
+/* ── Tag chips ───────────────────────────────────────────────────────────────── */
+
+.tagChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 6px 20px 2px;
+}
+
+.tagChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px 3px 10px;
+  border: 1px solid;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  background: var(--surface-2);
+}
+
+.tagChipRemove {
+  background: transparent;
+  border: none;
+  color: var(--text-faint);
+  font-size: 0.6rem;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  transition: color 0.12s;
+}
+
+.tagChipRemove:hover { color: var(--danger); }
+
+/* Tag picker */
+.tagPickerWrap { position: relative; }
+
+.tagPickerBtn {
+  background: transparent;
+  border: none;
+  font-size: 0.95rem;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: var(--radius-sm);
+  line-height: 1;
+  transition: background 0.12s;
+}
+
+.tagPickerBtn:hover { background: rgba(255,255,255,0.06); }
+
+.tagDropdown {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  right: 0;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  min-width: 160px;
+  padding: 4px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+  z-index: 10;
+}
+
+.tagOption {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 7px 10px;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  transition: background 0.1s;
+}
+
+.tagOption:hover { background: rgba(255,255,255,0.06); }
+.tagOptionActive { color: var(--text); }
+
+.tagOptionDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.tagOptionCheck {
+  margin-left: auto;
+  font-size: 0.7rem;
+  color: var(--primary);
+  font-weight: 600;
+}
+
 /* ── Tasks section ───────────────────────────────────────────────────────────── */
 
 .tasks {

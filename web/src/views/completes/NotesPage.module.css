@@ -69,6 +69,17 @@
 .newBtn:hover  { opacity: 0.88; transform: translateY(-1px); }
 .newBtn:active { transform: scale(0.97); }
 
+.actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.newListBtn {
+  background: linear-gradient(135deg, #0ea5e9, #0284c7);
+  box-shadow: 0 2px 14px rgba(14, 165, 233, 0.3);
+}
+
 /* ── Page header (for simple pages without search) ──────────────────────────── */
 
 .pageHeader {
@@ -186,6 +197,27 @@
   border-radius: var(--radius);
   font-size: 0.82rem;
   color: var(--text-muted);
+}
+
+/* ── Drag and drop ───────────────────────────────────────────────────────────── */
+
+.draggable {
+  cursor: grab;
+  border-radius: var(--radius-lg);
+  outline: 2px solid transparent;
+  transition: opacity 0.15s, outline-color 0.1s;
+}
+
+.draggable:active {
+  cursor: grabbing;
+}
+
+.dragging {
+  opacity: 0.35;
+}
+
+.dragOver {
+  outline-color: var(--primary);
 }
 
 /* ── Animations ──────────────────────────────────────────────────────────────── */

@@ -7,8 +7,8 @@ const router = Router();
 router.use(verifyAuth);
 
 router.get("/", tagController.getAll);
+router.get("/note/:noteId", tagController.getByNote);
 router.get("/:id", tagController.getById);
-router.get("/:noteId", tagController.getByNote);
 
 router.post("/", tagController.create);
 router.post("/note/:noteId/:tagId", tagController.addToNote);

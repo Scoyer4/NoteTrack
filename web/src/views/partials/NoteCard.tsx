@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
-import type { Note, NoteColor } from '../../types';
+import type { Note, NoteColor, Task } from '../../types';
+import { CHECKLIST_MARKER } from '../../types';
+import { tasksService } from '../../services/api';
 import styles from './NoteCard.module.css';
 
 const NOTE_BG: Record<NoteColor, string> = {
@@ -50,7 +52,15 @@ export default function NoteCard({
   onHardDelete,
 }: Props) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [tasks,    setTasks]    = useState<Task[]>([]);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  const isChecklist = note.content === CHECKLIST_MARKER;
+
+  useEffect(() => {
+    if (!isChecklist) return;
+    tasksService.getByNote(note.id).then(setTasks).catch(() => {});
+  }, [isChecklist, note.id]);
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -71,9 +81,11 @@ export default function NoteCard({
     day: 'numeric', month: 'short',
   });
 
-  const preview = note.content
+  const preview = !isChecklist && note.content
     ? note.content.slice(0, 160) + (note.content.length > 160 ? '…' : '')
     : null;
+
+  const PREVIEW_LIMIT = 5;
 
   return (
     <article
@@ -90,8 +102,46 @@ export default function NoteCard({
       )}
 
       <div className={styles.body}>
-        <h3 className={styles.title}>{note.title || 'Sin título'}</h3>
+        <h3 className={styles.title}>
+          {note.title || 'Sin título'}
+        </h3>
+
+        {isChecklist && tasks.length > 0 && (
+          <div className={styles.taskPreview}>
+            {tasks.slice(0, PREVIEW_LIMIT).map(task => (
+              <div
+                key={task.id}
+                className={styles.taskItem}
+                onClick={e => {
+                  e.stopPropagation();
+                  tasksService.update(task.id, { is_completed: !task.is_completed })
+                    .then(updated => setTasks(prev => prev.map(t => t.id === task.id ? updated : t)))
+                    .catch(() => {});
+                }}
+              >
+                <span className={`${styles.checkDot} ${task.is_completed ? styles.checkDotDone : ''}`} />
+                <span className={`${styles.taskLabel} ${task.is_completed ? styles.taskLabelDone : ''}`}>
+                  {task.title}
+                </span>
+              </div>
+            ))}
+            {tasks.length > PREVIEW_LIMIT && (
+              <p className={styles.taskMore}>+{tasks.length - PREVIEW_LIMIT} más</p>
+            )}
+          </div>
+        )}
+
         {preview && <p className={styles.preview}>{preview}</p>}
+
+        {note.tags && note.tags.length > 0 && (
+          <div className={styles.tagChips}>
+            {note.tags.map(tag => (
+              <span key={tag.id} className={styles.tagChip} style={{ borderColor: tag.color }}>
+                {tag.name}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className={styles.footer} onClick={e => e.stopPropagation()}>

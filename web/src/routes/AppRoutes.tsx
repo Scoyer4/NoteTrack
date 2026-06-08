@@ -8,7 +8,6 @@ import NotesPage        from '../views/completes/NotesPage';
 import PinnedPage       from '../views/completes/PinnedPage';
 import ArchivedPage     from '../views/completes/ArchivedPage';
 import TrashPage        from '../views/completes/TrashPage';
-import FoldersPage      from '../views/completes/FoldersPage';
 import TagsPage         from '../views/completes/TagsPage';
 
 export default function AppRoutes() {
@@ -29,7 +28,6 @@ export default function AppRoutes() {
         <Route path="pinned"   element={<PinnedPage />} />
         <Route path="archived" element={<ArchivedPage />} />
         <Route path="trash"    element={<TrashPage />} />
-        <Route path="folders"  element={<FoldersPage />} />
         <Route path="tags"     element={<TagsPage />} />
       </Route>
 

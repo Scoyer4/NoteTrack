@@ -10,8 +10,7 @@ const navMain = [
 ];
 
 const navOrg = [
-  { to: '/folders', label: 'Carpetas' },
-  { to: '/tags',    label: 'Etiquetas' },
+  { to: '/tags', label: 'Etiquetas' },
 ];
 
 export default function Sidebar() {

@@ -64,6 +64,107 @@
   -webkit-box-orient: vertical;
 }
 
+/* ── Tag chips ──────────────────────────────────────────────────────────────── */
+
+.tagChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 6px;
+}
+
+.tagChip {
+  display: inline-block;
+  padding: 2px 8px;
+  border: 1px solid;
+  border-radius: 12px;
+  font-size: 0.68rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  background: transparent;
+  white-space: nowrap;
+}
+
+.listIcon {
+  font-style: normal;
+  opacity: 0.55;
+  font-size: 0.85em;
+}
+
+/* ── Task preview (inside card) ─────────────────────────────────────────────── */
+
+.taskPreview {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.taskItem {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  cursor: pointer;
+  border-radius: 4px;
+  padding: 1px 3px;
+  margin: 0 -3px;
+  transition: background 0.1s;
+}
+
+.taskItem:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.checkDot {
+  flex-shrink: 0;
+  width: 13px;
+  height: 13px;
+  border-radius: 3px;
+  border: 1.5px solid var(--text-faint);
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.checkDotDone {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+.checkDotDone::after {
+  content: '';
+  display: block;
+  width: 4px;
+  height: 7px;
+  border: 1.5px solid #fff;
+  border-top: none;
+  border-left: none;
+  transform: rotate(45deg) translateY(-1px);
+}
+
+.taskLabel {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.4;
+}
+
+.taskLabelDone {
+  text-decoration: line-through;
+  opacity: 0.5;
+}
+
+.taskMore {
+  font-size: 0.72rem;
+  color: var(--text-faint);
+  margin-top: 2px;
+  padding-left: 20px;
+}
+
 /* ── Footer ────────────────────────────────────────────────────────────────── */
 
 .footer {

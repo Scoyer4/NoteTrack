@@ -1,29 +1,34 @@
 import { useState, useEffect } from 'react';
-import { useNotes }   from '../../controllers/useNotes';
-import { useFolders } from '../../controllers/useFolders';
+import { useNotes } from '../../controllers/useNotes';
 import { notesService } from '../../services/api';
 import NoteCard      from '../partials/NoteCard';
 import NoteModal     from '../partials/NoteModal';
+import TaskListModal from '../partials/TaskListModal';
 import ConfirmDialog from '../partials/ConfirmDialog';
 import type { Note } from '../../types';
+import { CHECKLIST_MARKER } from '../../types';
 import styles from './NotesPage.module.css';
 
 export default function PinnedPage() {
   const { createNote, updateNote, pinNote, archiveNote, softDeleteNote } = useNotes();
-  const { folders, fetchFolders } = useFolders();
 
   const [notes,     setNotes]     = useState<Note[]>([]);
   const [loading,   setLoading]   = useState(true);
-  const [modal,     setModal]     = useState<Note | null>(null);
+  const [noteModal, setNoteModal] = useState<Note | null>(null);
+  const [listModal, setListModal] = useState<Note | null>(null);
   const [confirmId, setConfirmId] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchFolders();
     notesService.getPinned()
       .then(setNotes)
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, [fetchFolders]);
+  }, []);
+
+  function handleEdit(note: Note) {
+    if (note.content === CHECKLIST_MARKER) setListModal(note);
+    else setNoteModal(note);
+  }
 
   async function handlePin(id: string) {
     await pinNote(id);
@@ -75,7 +80,7 @@ export default function PinnedPage() {
               key={note.id}
               note={note}
               variant="default"
-              onEdit={() => setModal(note)}
+              onEdit={() => handleEdit(note)}
               onPin={() => handlePin(note.id)}
               onArchive={() => handleArchive(note.id)}
               onSoftDelete={() => setConfirmId(note.id)}
@@ -84,11 +89,19 @@ export default function PinnedPage() {
         </div>
       )}
 
-      {modal && (
+      {noteModal && (
         <NoteModal
-          note={modal}
-          folders={folders}
-          onClose={() => setModal(null)}
+          note={noteModal}
+          onClose={() => setNoteModal(null)}
+          onCreate={createNote}
+          onUpdate={handleUpdate}
+        />
+      )}
+
+      {listModal && (
+        <TaskListModal
+          note={listModal}
+          onClose={() => setListModal(null)}
           onCreate={createNote}
           onUpdate={handleUpdate}
         />

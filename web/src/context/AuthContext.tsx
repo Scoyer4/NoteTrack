@@ -25,18 +25,47 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const storedToken = localStorage.getItem('access_token');
-    const storedUser  = localStorage.getItem('auth_user');
-    if (storedToken && storedUser) {
-      setToken(storedToken);
-      setUser(JSON.parse(storedUser));
+    async function init() {
+      const storedToken = localStorage.getItem('access_token');
+      const storedUser  = localStorage.getItem('auth_user');
+
+      if (storedToken && storedUser) {
+        const expiresAt = Number(localStorage.getItem('expires_at') ?? 0);
+        const now = Math.floor(Date.now() / 1000);
+
+        if (expiresAt > 0 && now >= expiresAt - 60) {
+          // Token expired or expiring soon — refresh proactively
+          const newToken = await authService.refresh();
+          if (newToken) {
+            setToken(newToken);
+            setUser(JSON.parse(storedUser));
+          }
+          // If refresh failed, auth:expired event already cleared the session
+        } else {
+          setToken(storedToken);
+          setUser(JSON.parse(storedUser));
+        }
+      }
+
+      setIsLoading(false);
     }
-    setIsLoading(false);
+
+    init();
+  }, []);
+
+  useEffect(() => {
+    function handleExpired() {
+      setToken(null);
+      setUser(null);
+    }
+    window.addEventListener('auth:expired', handleExpired);
+    return () => window.removeEventListener('auth:expired', handleExpired);
   }, []);
 
   function saveSession(session: AuthSession, authUser: AuthUser) {
     localStorage.setItem('access_token',  session.access_token);
     localStorage.setItem('refresh_token', session.refresh_token);
+    localStorage.setItem('expires_at',    String(session.expires_at));
     localStorage.setItem('auth_user', JSON.stringify(authUser));
     setToken(session.access_token);
     setUser(authUser);
@@ -45,6 +74,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   function clearSession() {
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
+    localStorage.removeItem('expires_at');
     localStorage.removeItem('auth_user');
     setToken(null);
     setUser(null);

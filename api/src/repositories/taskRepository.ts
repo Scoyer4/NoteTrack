@@ -8,8 +8,7 @@ export const taskRepository = {
       .from("tasks")
       .select("*")
       .eq("note_id", noteId)
-      .order("position", { ascending: true })
-      .maybeSingle();
+      .order("position", { ascending: true });
     if (error) throw new Error(error.message);
     return (data ?? []) as Task[];
   },

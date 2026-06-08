@@ -1,11 +1,14 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { useNotes }   from '../../controllers/useNotes';
-import { useFolders } from '../../controllers/useFolders';
-import NoteCard  from '../partials/NoteCard';
-import NoteModal from '../partials/NoteModal';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useNotes } from '../../controllers/useNotes';
+import NoteCard      from '../partials/NoteCard';
+import NoteModal     from '../partials/NoteModal';
+import TaskListModal from '../partials/TaskListModal';
 import ConfirmDialog from '../partials/ConfirmDialog';
 import type { Note } from '../../types';
+import { CHECKLIST_MARKER } from '../../types';
 import styles from './NotesPage.module.css';
+
+const ORDER_KEY = 'notetrack-notes-order';
 
 export default function NotesPage() {
   const {
@@ -14,23 +17,54 @@ export default function NotesPage() {
     pinNote, archiveNote, softDeleteNote,
   } = useNotes();
 
-  const { folders, fetchFolders } = useFolders();
-
-  // Modal state: null = closed, 'new' = create, Note = edit
-  const [modal, setModal] = useState<Note | 'new' | null>(null);
-  // Confirm delete
+  const [noteModal, setNoteModal] = useState<Note | 'new' | null>(null);
+  const [listModal, setListModal] = useState<Note | 'new' | null>(null);
   const [confirmId, setConfirmId] = useState<string | null>(null);
 
-  // Search
   const [search, setSearch] = useState('');
   const searchDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  useEffect(() => {
-    fetchNotes();
-    fetchFolders();
-  }, [fetchNotes, fetchFolders]);
+  // Persistent order for position stability + drag-and-drop
+  const [localOrder, setLocalOrder] = useState<string[]>(() => {
+    try { return JSON.parse(localStorage.getItem(ORDER_KEY) ?? '[]'); }
+    catch { return []; }
+  });
+  const orderInitRef = useRef(false);
 
-  // Debounced search
+  // Drag state
+  const [draggedId,  setDraggedId]  = useState<string | null>(null);
+  const [dragOverId, setDragOverId] = useState<string | null>(null);
+
+  useEffect(() => { fetchNotes(); }, [fetchNotes]);
+
+  // On first successful load, seed localOrder from server order (if nothing saved)
+  useEffect(() => {
+    if (!orderInitRef.current && !loading && notes.length > 0) {
+      orderInitRef.current = true;
+      setLocalOrder(prev => {
+        if (prev.length > 0) return prev;
+        const ids = notes.map(n => n.id);
+        localStorage.setItem(ORDER_KEY, JSON.stringify(ids));
+        return ids;
+      });
+    }
+  }, [loading, notes]);
+
+  // Apply localOrder on top of server notes; new notes (not yet in order) go to front
+  const orderedNotes = useMemo(() => {
+    if (localOrder.length === 0) return notes;
+    const map = new Map(notes.map(n => [n.id, n]));
+    const result: Note[] = [];
+    for (const id of localOrder) {
+      const n = map.get(id);
+      if (n) { result.push(n); map.delete(id); }
+    }
+    return [...map.values(), ...result];
+  }, [notes, localOrder]);
+
+  const pinned  = orderedNotes.filter(n => n.is_pinned);
+  const regular = orderedNotes.filter(n => !n.is_pinned);
+
   const handleSearch = useCallback((value: string) => {
     setSearch(value);
     if (searchDebounce.current) clearTimeout(searchDebounce.current);
@@ -39,14 +73,85 @@ export default function NotesPage() {
     }, 300);
   }, [fetchNotes]);
 
-  // Derived lists
-  const pinned  = notes.filter(n => n.is_pinned);
-  const regular = notes.filter(n => !n.is_pinned);
+  function handleEdit(note: Note) {
+    if (note.content === CHECKLIST_MARKER) setListModal(note);
+    else setNoteModal(note);
+  }
 
-  // Handlers
+  function handleCloseModal() {
+    setNoteModal(null);
+    setListModal(null);
+    // Re-fetch to refresh note data (tags, etc.); localOrder preserves display position
+    fetchNotes(search ? { search } : undefined);
+  }
+
   async function handleSoftDelete(id: string) {
     await softDeleteNote(id);
     setConfirmId(null);
+  }
+
+  // ── Drag handlers ──────────────────────────────────────────────────────────
+
+  function handleDragStart(noteId: string) {
+    setDraggedId(noteId);
+  }
+
+  function handleDragOver(noteId: string) {
+    if (draggedId && draggedId !== noteId) setDragOverId(noteId);
+  }
+
+  function handleDrop(targetId: string) {
+    if (!draggedId || draggedId === targetId) {
+      setDraggedId(null); setDragOverId(null); return;
+    }
+    // Prevent dropping between pinned ↔ regular sections
+    const dragged = notes.find(n => n.id === draggedId);
+    const target  = notes.find(n => n.id === targetId);
+    if (!dragged || !target || dragged.is_pinned !== target.is_pinned) {
+      setDraggedId(null); setDragOverId(null); return;
+    }
+    const allIds = orderedNotes.map(n => n.id);
+    const from   = allIds.indexOf(draggedId);
+    const to     = allIds.indexOf(targetId);
+    const next   = [...allIds];
+    next.splice(from, 1);
+    next.splice(to, 0, draggedId);
+    setLocalOrder(next);
+    localStorage.setItem(ORDER_KEY, JSON.stringify(next));
+    setDraggedId(null); setDragOverId(null);
+  }
+
+  function handleDragEnd() {
+    setDraggedId(null); setDragOverId(null);
+  }
+
+  // ── Render helpers ─────────────────────────────────────────────────────────
+
+  function renderCards(group: Note[]) {
+    return group.map(note => (
+      <div
+        key={note.id}
+        draggable
+        onDragStart={e => { e.dataTransfer.effectAllowed = 'move'; handleDragStart(note.id); }}
+        onDragOver={e => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; handleDragOver(note.id); }}
+        onDrop={e => { e.preventDefault(); handleDrop(note.id); }}
+        onDragEnd={handleDragEnd}
+        className={[
+          styles.draggable,
+          draggedId  === note.id ? styles.dragging : '',
+          dragOverId === note.id ? styles.dragOver : '',
+        ].join(' ')}
+      >
+        <NoteCard
+          note={note}
+          variant="default"
+          onEdit={() => handleEdit(note)}
+          onPin={() => pinNote(note.id)}
+          onArchive={() => archiveNote(note.id)}
+          onSoftDelete={() => setConfirmId(note.id)}
+        />
+      </div>
+    ));
   }
 
   return (
@@ -63,16 +168,24 @@ export default function NotesPage() {
             onChange={e => handleSearch(e.target.value)}
           />
         </div>
-        <button
-          id="notes-new-btn"
-          className={styles.newBtn}
-          onClick={() => setModal('new')}
-        >
-          + Nueva nota
-        </button>
+        <div className={styles.actions}>
+          <button
+            id="notes-new-btn"
+            className={styles.newBtn}
+            onClick={() => setNoteModal('new')}
+          >
+            + Nueva nota
+          </button>
+          <button
+            id="notes-new-list-btn"
+            className={`${styles.newBtn} ${styles.newListBtn}`}
+            onClick={() => setListModal('new')}
+          >
+            ☑ Nueva lista
+          </button>
+        </div>
       </div>
 
-      {/* Loading skeleton */}
       {loading && (
         <div className={styles.grid}>
           {Array.from({ length: 6 }).map((_, i) => (
@@ -95,60 +208,42 @@ export default function NotesPage() {
         </div>
       )}
 
-      {/* Pinned section */}
       {!loading && pinned.length > 0 && (
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>📌 Fijadas</h2>
           <div className={styles.grid}>
-            {pinned.map(note => (
-              <NoteCard
-                key={note.id}
-                note={note}
-                variant="default"
-                onEdit={() => setModal(note)}
-                onPin={() => pinNote(note.id)}
-                onArchive={() => archiveNote(note.id)}
-                onSoftDelete={() => setConfirmId(note.id)}
-              />
-            ))}
+            {renderCards(pinned)}
           </div>
         </section>
       )}
 
-      {/* All notes section */}
       {!loading && regular.length > 0 && (
         <section className={styles.section}>
-          {pinned.length > 0 && (
-            <h2 className={styles.sectionTitle}>Todas las notas</h2>
-          )}
+          {pinned.length > 0 && <h2 className={styles.sectionTitle}>Todas las notas</h2>}
           <div className={styles.grid}>
-            {regular.map(note => (
-              <NoteCard
-                key={note.id}
-                note={note}
-                variant="default"
-                onEdit={() => setModal(note)}
-                onPin={() => pinNote(note.id)}
-                onArchive={() => archiveNote(note.id)}
-                onSoftDelete={() => setConfirmId(note.id)}
-              />
-            ))}
+            {renderCards(regular)}
           </div>
         </section>
       )}
 
-      {/* Modal */}
-      {modal !== null && (
+      {noteModal !== null && (
         <NoteModal
-          note={modal === 'new' ? null : modal}
-          folders={folders}
-          onClose={() => { setModal(null); fetchNotes(search ? { search } : undefined); }}
+          note={noteModal === 'new' ? null : noteModal}
+          onClose={handleCloseModal}
           onCreate={createNote}
           onUpdate={updateNote}
         />
       )}
 
-      {/* Confirm delete */}
+      {listModal !== null && (
+        <TaskListModal
+          note={listModal === 'new' ? null : listModal}
+          onClose={handleCloseModal}
+          onCreate={createNote}
+          onUpdate={updateNote}
+        />
+      )}
+
       {confirmId && (
         <ConfirmDialog
           title="¿Mover a papelera?"
