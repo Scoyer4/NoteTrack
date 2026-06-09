@@ -18,6 +18,11 @@ const COLORS: ColorOption[] = [
   { value: 'orange',  label: 'Naranja',      dot: '#f97316' },
 ];
 
+interface PendingItem {
+  title: string;
+  due_date?: string;
+}
+
 export interface TaskListModalProps {
   note?: Note | null;
   defaultFolderId?: string | null;
@@ -37,6 +42,9 @@ export default function TaskListModal({ note: initialNote, defaultFolderId, onCl
   const [creating,   setCreating]   = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
 
+  // Items pendientes antes de crear la nota
+  const [pendingItems, setPendingItems] = useState<PendingItem[]>([]);
+
   const [availableTags,  setAvailableTags]  = useState<Tag[]>([]);
   const [selectedTagIds, setSelectedTagIds] = useState<Set<string>>(
     new Set(initialNote?.tags?.map(t => t.id) ?? [])
@@ -51,8 +59,6 @@ export default function TaskListModal({ note: initialNote, defaultFolderId, onCl
 
   useEffect(() => {
     if (initialNote?.id) fetchTasks(initialNote.id);
-  // Only run on mount. fetchTasks is stable (useCallback with []).
-  // initialNote never changes — it's a prop captured at mount time.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -136,33 +142,56 @@ export default function TaskListModal({ note: initialNote, defaultFolderId, onCl
     });
   }
 
+  // En modo edición crea la tarea directamente
+  // En modo creación guarda en pendingItems sin tocar la BD
   async function handleAddItem() {
-  if (!newItem.trim()) return;
+    if (!newItem.trim()) return;
 
-  let currentNote = note;
+    if (!isEdit) {
+      setPendingItems(prev => [...prev, {
+        title: newItem.trim(),
+        due_date: newDueDate || undefined,
+      }]);
+      setNewItem('');
+      setNewDueDate('');
+      newItemRef.current?.focus();
+      return;
+    }
 
-  if (!currentNote) {
+    await createTask(note.id, newItem.trim(), newDueDate || undefined);
+    setNewItem('');
+    setNewDueDate('');
+    newItemRef.current?.focus();
+  }
+
+  // Solo en modo creación — crea la nota y todas las tareas pendientes
+  async function handleCreate() {
+    if (!title.trim() && pendingItems.length === 0) return;
     setCreating(true);
     try {
       const finalTitle = title.trim() || 'Lista de tareas';
-      setTitle(finalTitle);
-      currentNote = await onCreate({ title: finalTitle, content: CHECKLIST_MARKER, color, folder_id: folderId });
-      setNote(currentNote);
-      for (const tagId of selectedTagIds) {
-        await tagsService.addToNote(currentNote.id, tagId);
-      }
-    } catch {
-      setCreating(false);
-      return;
-    }
-    setCreating(false);
-  }
+      const created = await onCreate({
+        title: finalTitle,
+        content: CHECKLIST_MARKER,
+        color,
+        folder_id: folderId,
+      });
+      setNote(created);
 
-  await createTask(currentNote.id, newItem.trim(), newDueDate || undefined); // ← añade newDueDate
-  setNewItem('');
-  setNewDueDate(''); // ← limpia la fecha después de añadir
-  newItemRef.current?.focus();
-}
+      await Promise.all([
+        ...pendingItems.map(item =>
+          createTask(created.id, item.title, item.due_date)
+        ),
+        ...[...selectedTagIds].map(tagId =>
+          tagsService.addToNote(created.id, tagId)
+        ),
+      ]);
+
+      onClose();
+    } catch { /* silent */ } finally {
+      setCreating(false);
+    }
+  }
 
   const saveLabelClass =
     saveStatus === 'saving' ? styles.statusSaving :
@@ -216,7 +245,8 @@ export default function TaskListModal({ note: initialNote, defaultFolderId, onCl
             <p className={styles.loading}>Cargando…</p>
           ) : (
             <>
-              {tasks.map(task => (
+              {/* Tareas existentes — solo en modo edición */}
+              {isEdit && tasks.map(task => (
                 <div key={task.id} className={styles.item}>
                   <span className={styles.dragHandle}>⠿</span>
                   <button
@@ -227,12 +257,12 @@ export default function TaskListModal({ note: initialNote, defaultFolderId, onCl
                     {task.title}
                   </span>
                   {task.due_date && (
-                  <span className={styles.taskDate}>
+                    <span className={styles.taskDate}>
                       {new Date(task.due_date).toLocaleDateString('es-ES', {
-                      day: 'numeric', month: 'short'
-                    })}
-                  </span>
-                )}
+                        day: 'numeric', month: 'short'
+                      })}
+                    </span>
+                  )}
                   <button
                     className={styles.removeBtn}
                     onClick={() => removeTask(task.id)}
@@ -241,6 +271,27 @@ export default function TaskListModal({ note: initialNote, defaultFolderId, onCl
                 </div>
               ))}
 
+              {/* Items pendientes — solo en modo creación */}
+              {!isEdit && pendingItems.map((item, i) => (
+                <div key={i} className={styles.item}>
+                  <span className={styles.checkDot} />
+                  <span className={styles.itemLabel}>{item.title}</span>
+                  {item.due_date && (
+                    <span className={styles.taskDate}>
+                      {new Date(item.due_date).toLocaleDateString('es-ES', {
+                        day: 'numeric', month: 'short'
+                      })}
+                    </span>
+                  )}
+                  <button
+                    className={styles.removeBtn}
+                    onClick={() => setPendingItems(prev => prev.filter((_, j) => j !== i))}
+                    title="Eliminar"
+                  >✕</button>
+                </div>
+              ))}
+
+              {/* Fila para añadir nuevo elemento */}
               <div className={styles.addRow}>
                 <span className={styles.addIcon}>+</span>
                 <input
@@ -323,6 +374,20 @@ export default function TaskListModal({ note: initialNote, defaultFolderId, onCl
 
           <button className={styles.closeBtnToolbar} onClick={onClose}>Cerrar</button>
         </div>
+
+        {/* Botón crear lista — solo en modo creación */}
+        {!isEdit && (
+          <div className={styles.createRow}>
+            <button
+              className={styles.createBtn}
+              onClick={handleCreate}
+              disabled={creating || (!title.trim() && pendingItems.length === 0)}
+            >
+              {creating ? 'Creando…' : 'Crear lista'}
+            </button>
+          </div>
+        )}
+
       </div>
     </div>
   );

@@ -9,8 +9,9 @@ export const notesController = {
       const userId = req.user!.id;
       const search = req.query.search as string | undefined;
       const folderId = req.query.folderId as string | undefined;
+      const tagId    = req.query.tagId    as string | undefined;
 
-      const notes = await notesRepository.findAll(userId, search, folderId);
+      const notes = await notesRepository.findAll(userId, search, folderId, tagId);
       return res.json(notes);
 
     } catch (error) {

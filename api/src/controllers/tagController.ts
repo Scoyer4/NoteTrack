@@ -120,7 +120,7 @@ export const tagController = {
         return res.status(404).json({ error: 'Nota no encontrada.' });
       }
 
-      const tag = await tagRepository.findById(noteId, tagId);
+      const tag = await tagRepository.findById(tagId, userId);
       if (!tag) {
         return res.status(404).json({ error: "Tag no encontrado" })
       }

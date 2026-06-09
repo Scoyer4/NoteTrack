@@ -84,7 +84,7 @@ export default function NoteCard({
   });
 
   const preview = !isChecklist && note.content
-    ? note.content.slice(0, 160) + (note.content.length > 160 ? '…' : '')
+    ? note.content.replace(/<[^>]*>/g, '').slice(0, 160) + (note.content.replace(/<[^>]*>/g, '').length > 160 ? '…' : '')
     : null;
 
   const PREVIEW_LIMIT = 5;

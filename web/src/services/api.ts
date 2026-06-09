@@ -102,10 +102,11 @@ export const authService = {
 // ── Notes ─────────────────────────────────────────────────────────────────────
 
 export const notesService = {
-  getAll: (params?: { search?: string; folderId?: string }) => {
+  getAll: (params?: { search?: string; folderId?: string, tagId?: string }) => {
     const q = new URLSearchParams();
     if (params?.search)   q.set('search', params.search);
     if (params?.folderId) q.set('folderId', params.folderId);
+    if (params?.tagId)    q.set('tagId',    params.tagId);
     return request<Note[]>(`/notes${q.size ? `?${q}` : ''}`);
   },
   getPinned:   () => request<Note[]>('/notes/pinned'),

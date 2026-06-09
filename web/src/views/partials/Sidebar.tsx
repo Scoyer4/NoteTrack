@@ -69,16 +69,14 @@ export default function Sidebar() {
         <nav>
 
           {tags.map(tag => (
-            <NavLink
+            <button
               key={tag.id}
-              to={`/?tagId=${tag.id}`}
-              className={() =>
-                `${styles.navItem} ${activeTagId === tag.id ? styles.active : ''}`
-              }
+              className={`${styles.navBtn} ${styles.navItem} ${activeTagId === tag.id ? styles.active : ''}`}
+              onClick={() => navigate(activeTagId === tag.id ? '/' : `/?tagId=${tag.id}`)}
             >
               <span className={styles.folderDot} style={{ background: tag.color }} />
               {tag.name}
-            </NavLink>
+            </button>
           ))}
 
           <NavLink

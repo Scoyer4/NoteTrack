@@ -24,6 +24,7 @@ export default function NotesPage() {
   const [searchParams] = useSearchParams();
   const navigate       = useNavigate();
   const folderId       = searchParams.get('folderId') ?? undefined;
+  const tagId          = searchParams.get('tagId') ?? undefined;
 
   const activeFolder = useMemo(
     () => folders.find(f => f.id === folderId) ?? null,
@@ -60,8 +61,14 @@ export default function NotesPage() {
   useEffect(() => { fetchFolders(); }, [fetchFolders]);
 
   useEffect(() => {
-    fetchNotes(folderId ? { folderId } : undefined);
-  }, [fetchNotes, folderId]);
+    if (tagId) {
+      fetchNotes({ tagId });
+    } else if (folderId) {
+      fetchNotes({ folderId });
+    } else {
+      fetchNotes();
+    }
+  }, [fetchNotes, folderId, tagId]);
 
   useEffect(() => {
     if (!orderInitRef.current && !loading && notes.length > 0) {
@@ -104,9 +111,17 @@ export default function NotesPage() {
     setSearch(value);
     if (searchDebounce.current) clearTimeout(searchDebounce.current);
     searchDebounce.current = setTimeout(() => {
-      fetchNotes(value ? { search: value, folderId } : folderId ? { folderId } : undefined);
+      if (value) {
+        fetchNotes({ search: value, folderId, tagId });
+      } else if (tagId) {
+        fetchNotes({ tagId });
+      } else if (folderId) {
+        fetchNotes({ folderId });
+      } else {
+        fetchNotes();
+      }
     }, 300);
-  }, [fetchNotes, folderId]);
+  }, [fetchNotes, folderId, tagId]);
 
   // ← CAMBIO: abre el modal correcto según el tipo de nota
   function handleEdit(note: Note) {

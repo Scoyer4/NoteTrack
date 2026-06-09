@@ -7,7 +7,7 @@ export function useNotes() {
   const [loading, setLoading] = useState(false);
   const [error,   setError]   = useState<string | null>(null);
 
-  const fetchNotes = useCallback(async (params?: { search?: string; folderId?: string }) => {
+  const fetchNotes = useCallback(async (params?: { search?: string; folderId?: string, tagId?: string }) => {
     setLoading(true);
     setError(null);
     try {

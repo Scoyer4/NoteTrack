@@ -74,6 +74,18 @@
   padding: 18px 10px 6px;
 }
 
+.navBtn {
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+
 .label {
   display: block;
   padding: 0 7px 7px;

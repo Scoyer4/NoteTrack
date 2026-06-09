@@ -11,7 +11,7 @@ function withTags(data: any[]): Notes[] {
 }
 
 export const notesRepository = {
-  findAll: async (userId: string, search?: string, folderId?: string): Promise<Notes[]> => {
+  findAll: async (userId: string, search?: string, folderId?: string, tagId?: string): Promise<Notes[]> => {
     let query = supabase
       .from('notes')
       .select(WITH_TAGS)
@@ -27,6 +27,21 @@ export const notesRepository = {
 
     if (folderId) {
       query = query.eq('folder_id', folderId);
+    }
+
+    if (tagId) {
+      const { data: noteTagRows } = await supabase
+        .from('note_tags')
+        .select('note_id')
+        .eq('tag_id', tagId);
+
+      const noteIds = (noteTagRows ?? []).map(row => row.note_id);
+
+      if (noteIds.length === 0) {
+        return [];
+      }
+
+      query = query.in('id', noteIds);
     }
 
     const { data, error } = await query;

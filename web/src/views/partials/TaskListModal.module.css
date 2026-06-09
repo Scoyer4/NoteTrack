@@ -196,6 +196,37 @@
   position: relative;
 }
 
+.checkDot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  flex-shrink: 0;
+}
+
+.createRow {
+  padding: 12px 16px;
+  display: flex;
+  justify-content: flex-end;
+  border-top: 1px solid var(--border);
+}
+
+.createBtn {
+  padding: 8px 20px;
+  background: linear-gradient(135deg, #9333ea, #7c3aed);
+  border: none;
+  border-radius: var(--radius);
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.createBtn:hover    { opacity: 0.88; }
+.createBtn:disabled { opacity: 0.4; cursor: not-allowed; }
+
 .checkbox.checked {
   background: var(--primary);
   border-color: var(--primary);

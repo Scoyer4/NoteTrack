@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 import type { Folder, Note, NoteColor, Tag } from '../../types';
 import { foldersService, tagsService } from '../../services/api';
 import styles from './NoteModal.module.css';
@@ -15,6 +17,27 @@ const COLORS: ColorOption[] = [
   { value: 'red',     label: 'Rojo',         dot: '#ef4444' },
   { value: 'orange',  label: 'Naranja',      dot: '#f97316' },
 ];
+
+// Configuración de la barra de herramientas de Quill
+const QUILL_MODULES = {
+  toolbar: [
+    [{ header: [1, 2, false] }],
+    ['bold', 'italic', 'underline', 'strike'],
+    [{ list: 'ordered' }, { list: 'bullet' }],
+    ['clean'],
+  ],
+};
+
+const QUILL_FORMATS = [
+  'header',
+  'bold', 'italic', 'underline', 'strike',
+  'list', 'bullet',
+];
+
+// Quill marca el contenido vacío como <p><br></p>
+function isQuillEmpty(value: string) {
+  return value === '' || value === '<p><br></p>';
+}
 
 export interface NoteModalProps {
   note?: Note | null;
@@ -132,16 +155,26 @@ export default function NoteModal({ note: initialNote, defaultFolderId, onClose,
   }
 
   async function handleCreate() {
-    if (!title.trim() && !content.trim()) return;
+    if (!title.trim() && isQuillEmpty(content)) return;
     setCreating(true);
     try {
-      const created = await onCreate({ title, content, color, folder_id: folderId });
-      setNote(created);
-      for (const tagId of selectedTagIds) {
-        await tagsService.addToNote(created.id, tagId);
-      }
+      const created = await onCreate({
+        title,
+        content: isQuillEmpty(content) ? '' : content,
+        color,
+        folder_id: folderId,
+      });
+
+      await Promise.all(
+        [...selectedTagIds].map(tagId =>
+          tagsService.addToNote(created.id, tagId)
+        )
+      );
+
       onClose();
-    } catch { /* silent */ } finally {
+    } catch (err) {
+      console.error('Error en handleCreate:', err);
+    } finally {
       setCreating(false);
     }
   }
@@ -184,14 +217,17 @@ export default function NoteModal({ note: initialNote, defaultFolderId, onClose,
           maxLength={200}
         />
 
-        {/* Content */}
-        <textarea
-          id="note-modal-content"
-          className={styles.contentArea}
-          placeholder="Escribe algo…"
-          value={content}
-          onChange={e => handleContentChange(e.target.value)}
-        />
+        {/* Editor Quill */}
+        <div className={styles.editorWrap}>
+          <ReactQuill
+            theme="snow"
+            value={content}
+            onChange={handleContentChange}
+            modules={QUILL_MODULES}
+            formats={QUILL_FORMATS}
+            placeholder="Escribe algo…"
+          />
+        </div>
 
         {/* Selected tag chips */}
         {selectedTagIds.size > 0 && (
@@ -272,7 +308,7 @@ export default function NoteModal({ note: initialNote, defaultFolderId, onClose,
               id="note-modal-create"
               className={styles.createBtn}
               onClick={handleCreate}
-              disabled={creating || (!title.trim() && !content.trim())}
+              disabled={creating || (!title.trim() && isQuillEmpty(content))}
             >
               {creating ? 'Creando…' : 'Crear nota'}
             </button>

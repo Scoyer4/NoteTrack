@@ -129,6 +129,103 @@
   flex-wrap: wrap;
 }
 
+/* ── Editor Quill ─────────────────────────────────────────────────────────── */
+
+.editorWrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 200px;
+}
+
+/* Barra de herramientas */
+.editorWrap :global(.ql-toolbar) {
+  background: var(--surface);
+  border: none;
+  border-bottom: 1px solid var(--border);
+  padding: 6px 12px;
+}
+
+/* Botones de la barra */
+.editorWrap :global(.ql-toolbar button),
+.editorWrap :global(.ql-toolbar .ql-picker-label) {
+  color: var(--text-muted) !important;
+}
+
+.editorWrap :global(.ql-toolbar button:hover),
+.editorWrap :global(.ql-toolbar button.ql-active),
+.editorWrap :global(.ql-toolbar .ql-picker-label:hover) {
+  color: var(--text) !important;
+}
+
+.editorWrap :global(.ql-toolbar button svg .ql-stroke) {
+  stroke: var(--text-muted) !important;
+}
+
+.editorWrap :global(.ql-toolbar button:hover svg .ql-stroke),
+.editorWrap :global(.ql-toolbar button.ql-active svg .ql-stroke) {
+  stroke: var(--text) !important;
+}
+
+.editorWrap :global(.ql-toolbar button svg .ql-fill) {
+  fill: var(--text-muted) !important;
+}
+
+.editorWrap :global(.ql-toolbar button:hover svg .ql-fill),
+.editorWrap :global(.ql-toolbar button.ql-active svg .ql-fill) {
+  fill: var(--text) !important;
+}
+
+/* Dropdown de headers */
+.editorWrap :global(.ql-picker-options) {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius) !important;
+}
+
+.editorWrap :global(.ql-picker-item) {
+  color: var(--text-muted) !important;
+}
+
+.editorWrap :global(.ql-picker-item:hover) {
+  color: var(--text) !important;
+}
+
+/* Área de edición */
+.editorWrap :global(.ql-container) {
+  background: transparent;
+  border: none;
+  font-family: inherit;
+  font-size: 0.9rem;
+}
+
+.editorWrap :global(.ql-editor) {
+  color: var(--text);
+  min-height: 180px;
+  padding: 12px 16px;
+  line-height: 1.6;
+}
+
+.editorWrap :global(.ql-editor.ql-blank::before) {
+  color: var(--text-faint);
+  font-style: normal;
+}
+
+/* Headings dentro del editor */
+.editorWrap :global(.ql-editor h1) {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+.editorWrap :global(.ql-editor h2) {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
 /* Color picker */
 .colorRow {
   display: flex;
