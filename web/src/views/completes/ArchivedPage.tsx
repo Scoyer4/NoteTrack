@@ -49,7 +49,6 @@ export default function ArchivedPage() {
 
       {!loading && notes.length === 0 && (
         <div className={styles.empty}>
-          <div className={styles.emptyIcon}>🗄️</div>
           <h2 className={styles.emptyTitle}>Sin notas archivadas</h2>
           <p className={styles.emptyText}>Las notas que archivadas aparecerán aquí.</p>
         </div>

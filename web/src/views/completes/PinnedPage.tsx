@@ -67,7 +67,6 @@ export default function PinnedPage() {
 
       {!loading && notes.length === 0 && (
         <div className={styles.empty}>
-          <div className={styles.emptyIcon}>📌</div>
           <h2 className={styles.emptyTitle}>Sin notas fijadas</h2>
           <p className={styles.emptyText}>Fija una nota desde el menú de opciones para verla aquí.</p>
         </div>

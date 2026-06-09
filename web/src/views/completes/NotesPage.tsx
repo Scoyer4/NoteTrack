@@ -188,7 +188,6 @@ export default function NotesPage() {
     <div className={styles.page}>
       <div className={styles.topBar}>
         <div className={styles.searchWrap}>
-          <span className={styles.searchIcon}>⌕</span>
           <input
             id="notes-search"
             className={styles.search}
@@ -210,7 +209,7 @@ export default function NotesPage() {
             className={styles.newListBtn}
             onClick={() => setListModal('new')}
           >
-            ☑ Nueva lista
+            ☰ Nueva lista
           </button>
         </div>
       </div>
@@ -228,13 +227,13 @@ export default function NotesPage() {
             className={`${styles.filterTab} ${activeTab === 'notes' ? styles.filterTabActive : ''}`}
             onClick={() => setActiveTab('notes')}
           >
-            📝 Notas
+            Notas
           </button>
           <button
             className={`${styles.filterTab} ${activeTab === 'lists' ? styles.filterTabActive : ''}`}
             onClick={() => setActiveTab('lists')}
           >
-            ☑ Listas
+            Listas
           </button>
         </div>
       )}
@@ -248,8 +247,8 @@ export default function NotesPage() {
           <span className={styles.folderBannerName}>{activeFolder.name}</span>
           <button
             className={styles.folderBannerClear}
-            onClick={() => navigate('/')}
-            title="Quitar filtro de carpeta"
+            onClick={() => navigate('/folders')}
+            title="Volver a carpetas"
           >
             ✕
           </button>
@@ -266,7 +265,7 @@ export default function NotesPage() {
 
       {!loading && notes.length === 0 && (
         <div className={styles.empty}>
-          <div className={styles.emptyIcon}>{activeFolder ? activeFolder.icon || '📁' : '📝'}</div>
+          {activeFolder && <div className={styles.emptyIcon}>{activeFolder.icon || '📁'}</div>}
           <h2 className={styles.emptyTitle}>
             {search
               ? 'Sin resultados'
@@ -286,7 +285,7 @@ export default function NotesPage() {
 
       {!loading && pinned.length > 0 && (
         <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>📌 Fijadas</h2>
+          <h2 className={styles.sectionTitle}>Fijadas</h2>
           <div className={styles.grid}>
             {renderCards(pinned)}
           </div>
@@ -317,6 +316,7 @@ export default function NotesPage() {
       {listModal !== null && (
         <TaskListModal
           note={listModal === 'new' ? null : listModal}
+          defaultFolderId={listModal === 'new' ? (folderId ?? null) : undefined}
           onClose={handleCloseModal}
           onCreate={createNote}
           onUpdate={updateNote}

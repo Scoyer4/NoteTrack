@@ -166,7 +166,7 @@ export default function NoteModal({ note: initialNote, defaultFolderId, onClose,
               <span className={`${styles.saveStatus} ${saveLabelClass}`}>
                 {saveStatus === 'saving' && 'Guardando…'}
                 {saveStatus === 'saved'  && '✓ Guardado'}
-                {saveStatus === 'error'  && '⚠ Error'}
+                {saveStatus === 'error'  && 'Error'}
               </span>
             )}
             <button className={styles.closeBtn} onClick={onClose} title="Cerrar (Esc)">✕</button>
@@ -228,7 +228,7 @@ export default function NoteModal({ note: initialNote, defaultFolderId, onClose,
               onChange={e => handleFolderChange(e.target.value || null)}
               title="Carpeta"
             >
-              <option value="">📂 Sin carpeta</option>
+              <option value="">Sin carpeta</option>
               {folders.map(f => (
                 <option key={f.id} value={f.id}>
                   {f.icon} {f.name}
@@ -244,7 +244,7 @@ export default function NoteModal({ note: initialNote, defaultFolderId, onClose,
                 onClick={() => setShowTagPicker(p => !p)}
                 title="Etiquetas"
               >
-                🏷
+                Etiquetas
               </button>
               {showTagPicker && (
                 <div className={styles.tagDropdown}>

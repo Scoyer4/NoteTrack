@@ -29,10 +29,10 @@
 }
 
 .logo {
-  font-size: 0.95rem;
+  font-size: 1.45rem;
   font-weight: 800;
-  letter-spacing: -0.03em;
-  margin-bottom: 16px;
+  letter-spacing: -0.04em;
+  text-align: center;
 
   /* Gradient text */
   background: linear-gradient(135deg, #c4b5fd, #8b5cf6);

@@ -17,6 +17,7 @@ export default function FoldersPage() {
   const { folders, loading, fetchFolders, createFolder, deleteFolder } = useFolders();
   const navigate = useNavigate();
 
+  const [showForm,     setShowForm]    = useState(false);
   const [name,        setName]        = useState('');
   const [color,       setColor]       = useState(PRESET_COLORS[0]);
   const [icon,        setIcon]        = useState(PRESET_ICONS[0]);
@@ -35,6 +36,9 @@ export default function FoldersPage() {
     try {
       await createFolder({ name: name.trim(), color, icon });
       setName('');
+      setColor(PRESET_COLORS[0]);
+      setIcon(PRESET_ICONS[0]);
+      setShowForm(false);
     } catch {
       setError('Error al crear la carpeta. Inténtalo de nuevo.');
     } finally {
@@ -64,12 +68,17 @@ export default function FoldersPage() {
     <div className={styles.page}>
       {/* Header */}
       <div className={styles.header}>
-        <h1 className={styles.title}>📁 Carpetas</h1>
-        <p className={styles.subtitle}>Organiza tus notas en carpetas</p>
+        <h1 className={styles.title}>Carpetas</h1>
+        <button
+          className={styles.newBtn}
+          onClick={() => { setShowForm(p => !p); setError(''); }}
+        >
+          {showForm ? 'Cancelar' : '+ Nueva carpeta'}
+        </button>
       </div>
 
       {/* Create form */}
-      <form className={styles.form} onSubmit={handleCreate}>
+      {showForm && <form className={styles.form} onSubmit={handleCreate}>
         <h2 className={styles.formTitle}>Nueva carpeta</h2>
 
         <div className={styles.formRow}>
@@ -128,7 +137,7 @@ export default function FoldersPage() {
         >
           {creating ? 'Creando…' : '+ Crear carpeta'}
         </button>
-      </form>
+      </form>}
 
       {/* Folder grid */}
       {loading ? (
@@ -139,7 +148,6 @@ export default function FoldersPage() {
         </div>
       ) : folders.length === 0 ? (
         <div className={styles.empty}>
-          <div className={styles.emptyIcon}>📂</div>
           <h2 className={styles.emptyTitle}>Sin carpetas todavía</h2>
           <p className={styles.emptyText}>Crea tu primera carpeta arriba para empezar a organizar tus notas.</p>
         </div>

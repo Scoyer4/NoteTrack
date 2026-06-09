@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import type { Note, NoteColor, Tag } from '../../types';
+import type { Folder, Note, NoteColor, Tag } from '../../types';
 import { CHECKLIST_MARKER } from '../../types';
 import { useTasks } from '../../controllers/useTasks';
-import { tagsService } from '../../services/api';
+import { foldersService, tagsService } from '../../services/api';
 import styles from './TaskListModal.module.css';
 
 interface ColorOption { value: NoteColor; label: string; dot: string }
@@ -20,15 +20,18 @@ const COLORS: ColorOption[] = [
 
 export interface TaskListModalProps {
   note?: Note | null;
+  defaultFolderId?: string | null;
   onClose: () => void;
-  onCreate: (data: { title: string; content: string; color?: NoteColor }) => Promise<Note>;
-  onUpdate: (id: string, data: Partial<Pick<Note, 'title' | 'color'>>) => Promise<Note>;
+  onCreate: (data: { title: string; content: string; color?: NoteColor; folder_id?: string | null }) => Promise<Note>;
+  onUpdate: (id: string, data: Partial<Pick<Note, 'title' | 'color' | 'folder_id'>>) => Promise<Note>;
 }
 
-export default function TaskListModal({ note: initialNote, onClose, onCreate, onUpdate }: TaskListModalProps) {
+export default function TaskListModal({ note: initialNote, defaultFolderId, onClose, onCreate, onUpdate }: TaskListModalProps) {
   const [note,       setNote]       = useState<Note | null>(initialNote ?? null);
   const [title,      setTitle]      = useState(initialNote?.title ?? '');
   const [color,      setColor]      = useState<NoteColor>(initialNote?.color ?? 'default');
+  const [folderId,   setFolderId]   = useState<string | null>(initialNote?.folder_id ?? defaultFolderId ?? null);
+  const [folders,    setFolders]    = useState<Folder[]>([]);
   const [newItem,    setNewItem]    = useState('');
   const [newDueDate, setNewDueDate] = useState('');
   const [creating,   setCreating]   = useState(false);
@@ -54,6 +57,7 @@ export default function TaskListModal({ note: initialNote, onClose, onCreate, on
   }, []);
 
   useEffect(() => {
+    foldersService.getAll().then(setFolders).catch(() => {});
     tagsService.getAll().then(setAvailableTags).catch(() => {});
   }, []);
 
@@ -107,6 +111,16 @@ export default function TaskListModal({ note: initialNote, onClose, onCreate, on
     }
   }
 
+  async function handleFolderChange(newFolderId: string | null) {
+    setFolderId(newFolderId);
+    if (note) {
+      try {
+        const updated = await onUpdate(note.id, { folder_id: newFolderId });
+        setNote(updated);
+      } catch { /* silent */ }
+    }
+  }
+
   async function handleToggleTag(tagId: string) {
     const isSelected = selectedTagIds.has(tagId);
     if (note) {
@@ -132,7 +146,7 @@ export default function TaskListModal({ note: initialNote, onClose, onCreate, on
     try {
       const finalTitle = title.trim() || 'Lista de tareas';
       setTitle(finalTitle);
-      currentNote = await onCreate({ title: finalTitle, content: CHECKLIST_MARKER, color });
+      currentNote = await onCreate({ title: finalTitle, content: CHECKLIST_MARKER, color, folder_id: folderId });
       setNote(currentNote);
       for (const tagId of selectedTagIds) {
         await tagsService.addToNote(currentNote.id, tagId);
@@ -177,7 +191,7 @@ export default function TaskListModal({ note: initialNote, onClose, onCreate, on
               <span className={`${styles.saveStatus} ${saveLabelClass}`}>
                 {saveStatus === 'saving' && 'Guardando…'}
                 {saveStatus === 'saved'  && '✓ Guardado'}
-                {saveStatus === 'error'  && '⚠ Error'}
+                {saveStatus === 'error'  && 'Error'}
               </span>
             )}
             <button className={styles.closeBtn} onClick={onClose} title="Cerrar (Esc)">✕</button>
@@ -264,6 +278,22 @@ export default function TaskListModal({ note: initialNote, onClose, onCreate, on
             ))}
           </div>
 
+          {folders.length > 0 && (
+            <select
+              className={styles.folderSelect}
+              value={folderId ?? ''}
+              onChange={e => handleFolderChange(e.target.value || null)}
+              title="Carpeta"
+            >
+              <option value="">Sin carpeta</option>
+              {folders.map(f => (
+                <option key={f.id} value={f.id}>
+                  {f.icon} {f.name}
+                </option>
+              ))}
+            </select>
+          )}
+
           {availableTags.length > 0 && (
             <div className={styles.tagPickerWrap} ref={tagPickerRef}>
               <button
@@ -271,7 +301,7 @@ export default function TaskListModal({ note: initialNote, onClose, onCreate, on
                 onClick={() => setShowTagPicker(p => !p)}
                 title="Etiquetas"
               >
-                🏷
+                Etiquetas
               </button>
               {showTagPicker && (
                 <div className={styles.tagDropdown}>

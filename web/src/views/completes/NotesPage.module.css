@@ -75,10 +75,6 @@
   flex-shrink: 0;
 }
 
-.newListBtn {
-  background: linear-gradient(135deg, #0ea5e9, #0284c7);
-  box-shadow: 0 2px 14px rgba(14, 165, 233, 0.3);
-}
 
 /* ── Page header (for simple pages without search) ──────────────────────────── */
 
@@ -200,21 +196,22 @@
 }
 
 .newListBtn {
-  background: transparent;
-  border: 1px solid var(--brand);
-  color: var(--brand);
-  padding: 8px 16px;
-  border-radius: 8px;
+  padding: 9px 20px;
+  background: linear-gradient(135deg, #9333ea, #7c3aed);
+  border: none;
+  border-radius: var(--radius);
+  color: #fff;
   font-size: 0.875rem;
-  font-weight: 500;
+  font-weight: 600;
+  font-family: inherit;
   cursor: pointer;
-  transition: background 0.15s;
+  white-space: nowrap;
+  box-shadow: 0 2px 14px rgba(139, 92, 246, 0.35);
+  transition: opacity 0.15s, transform 0.1s;
 }
 
-.newListBtn:hover {
-  background: var(--brand);
-  color: #fff;
-}
+.newListBtn:hover  { opacity: 0.88; transform: translateY(-1px); }
+.newListBtn:active { transform: scale(0.97); }
 
 /* ── Folder banner (active folder filter indicator) ──────────────────────────── */
 

@@ -100,7 +100,6 @@ export default function TagsPage() {
       {/* Empty state */}
       {!loading && tags.length === 0 && (
         <div className={styles.empty}>
-          <div className={styles.emptyIcon}>🏷️</div>
           <h2 className={styles.emptyTitle}>Sin etiquetas</h2>
           <p className={styles.emptyText}>Crea etiquetas para categorizar tus notas fácilmente.</p>
         </div>

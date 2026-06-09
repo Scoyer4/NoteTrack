@@ -1,12 +1,11 @@
 import { useEffect } from 'react';
 import { NavLink, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { useFolders } from '../../controllers/useFolders';
+import { useTags } from '../../controllers/useTags';
 import styles from './Sidebar.module.css';
 
 const navMain = [
   { to: '/',         label: 'Todas las notas', end: true },
-  { to: '/pinned',   label: 'Fijadas' },
   { to: '/archived', label: 'Archivadas' },
   { to: '/trash',    label: 'Papelera' },
 ];
@@ -14,12 +13,12 @@ const navMain = [
 export default function Sidebar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const { folders, fetchFolders } = useFolders();
+  const { tags, fetchTags } = useTags();
 
   const [searchParams] = useSearchParams();
-  const activeFolderId = searchParams.get('folderId');
+  const activeTagId = searchParams.get('tagId');
 
-  useEffect(() => { fetchFolders(); }, [fetchFolders]);
+  useEffect(() => { fetchTags(); }, [fetchTags]);
 
   async function handleLogout() {
     await logout();
@@ -31,9 +30,6 @@ export default function Sidebar() {
 
       <div className={styles.top}>
         <div className={styles.logo}>NoteTrack</div>
-        <button className={styles.newBtn} onClick={() => navigate('/')}>
-          Nueva nota
-        </button>
       </div>
 
       <div className={styles.navSection}>
@@ -45,8 +41,7 @@ export default function Sidebar() {
               to={item.to}
               end={item.end}
               className={({ isActive }) =>
-                // ← si hay folderId activo, "Todas las notas" no se marca
-                `${styles.navItem} ${isActive && !activeFolderId ? styles.active : ''}`
+                `${styles.navItem} ${isActive && !activeTagId ? styles.active : ''}`
               }
             >
               {item.label}
@@ -72,30 +67,30 @@ export default function Sidebar() {
       <div className={styles.navSection}>
         <span className={styles.label}>Organizar</span>
         <nav>
+
+          {tags.map(tag => (
+            <NavLink
+              key={tag.id}
+              to={`/?tagId=${tag.id}`}
+              className={() =>
+                `${styles.navItem} ${activeTagId === tag.id ? styles.active : ''}`
+              }
+            >
+              <span className={styles.folderDot} style={{ background: tag.color }} />
+              {tag.name}
+            </NavLink>
+          ))}
+
           <NavLink
             to="/tags"
             className={({ isActive }) =>
               `${styles.navItem} ${isActive ? styles.active : ''}`
             }
           >
-            Etiquetas
+            + Gestionar etiquetas
           </NavLink>
 
-          {folders.map(folder => (
-            <NavLink
-              key={folder.id}
-              to={`/?folderId=${folder.id}`}
-              className={() =>
-                `${styles.navItem} ${activeFolderId === folder.id ? styles.active : ''}`
-              }
-            >
-              <span
-                className={styles.folderDot}
-                style={{ background: folder.color }}
-              />
-              {folder.name}
-            </NavLink>
-          ))}
+          <div className={styles.divider} />
 
           <NavLink
             to="/folders"
@@ -103,7 +98,7 @@ export default function Sidebar() {
               `${styles.navItem} ${isActive ? styles.active : ''}`
             }
           >
-            + Gestionar carpetas
+            Carpetas
           </NavLink>
 
         </nav>
