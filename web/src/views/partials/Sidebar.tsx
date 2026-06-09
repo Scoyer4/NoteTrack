@@ -15,8 +15,10 @@ const navTasks = [
 ];
 
 const navOrg = [
+  { to: '/folders', label: 'Carpetas' },
   { to: '/tags', label: 'Etiquetas' },
 ];
+
 
 export default function Sidebar() {
   const { user, logout } = useAuth();

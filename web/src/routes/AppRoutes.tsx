@@ -11,6 +11,7 @@ import TrashPage        from '../views/completes/TrashPage';
 import TagsPage         from '../views/completes/TagsPage';
 import ListsPage        from '../views/completes/ListsPage';
 import CalendarPage     from '../views/completes/CalendarPage';
+import FoldersPage      from '../views/completes/FoldersPage';
 
 export default function AppRoutes() {
   return (
@@ -33,6 +34,7 @@ export default function AppRoutes() {
         <Route path="tags"     element={<TagsPage />} />
         <Route path="lists"      element={<ListsPage />} />
         <Route path="calendar"   element={<CalendarPage />} />
+        <Route path="folders"    element={<FoldersPage />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />

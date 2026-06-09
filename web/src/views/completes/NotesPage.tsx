@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useNotes } from '../../controllers/useNotes';
+import { useFolders } from '../../controllers/useFolders';
 import NoteCard      from '../partials/NoteCard';
 import NoteModal     from '../partials/NoteModal';
 import ConfirmDialog from '../partials/ConfirmDialog';
@@ -16,6 +18,22 @@ export default function NotesPage() {
     pinNote, archiveNote, softDeleteNote,
   } = useNotes();
 
+  const { folders, fetchFolders } = useFolders();
+
+  const [searchParams] = useSearchParams();
+  const navigate       = useNavigate();
+  const folderId       = searchParams.get('folderId') ?? undefined;
+
+  const activeFolder = useMemo(
+    () => folders.find(f => f.id === folderId) ?? null,
+    [folders, folderId],
+  );
+
+  const folderMap = useMemo(
+    () => new Map(folders.map(f => [f.id, f])),
+    [folders],
+  );
+
   const [noteModal, setNoteModal] = useState<Note | 'new' | null>(null);
   const [confirmId, setConfirmId] = useState<string | null>(null);
 
@@ -31,7 +49,13 @@ export default function NotesPage() {
   const [draggedId,  setDraggedId]  = useState<string | null>(null);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
 
-  useEffect(() => { fetchNotes(); }, [fetchNotes]);
+  // Load folders once on mount
+  useEffect(() => { fetchFolders(); }, [fetchFolders]);
+
+  // Reload notes when folderId or component mounts
+  useEffect(() => {
+    fetchNotes(folderId ? { folderId } : undefined);
+  }, [fetchNotes, folderId]);
 
   useEffect(() => {
     if (!orderInitRef.current && !loading && notes.length > 0) {
@@ -63,9 +87,9 @@ export default function NotesPage() {
     setSearch(value);
     if (searchDebounce.current) clearTimeout(searchDebounce.current);
     searchDebounce.current = setTimeout(() => {
-      fetchNotes(value ? { search: value } : undefined);
+      fetchNotes(value ? { search: value, folderId } : folderId ? { folderId } : undefined);
     }, 300);
-  }, [fetchNotes]);
+  }, [fetchNotes, folderId]);
 
   function handleEdit(note: Note) {
     setNoteModal(note);
@@ -73,7 +97,7 @@ export default function NotesPage() {
 
   function handleCloseModal() {
     setNoteModal(null);
-    fetchNotes(search ? { search } : undefined);
+    fetchNotes(folderId ? { folderId } : search ? { search } : undefined);
   }
 
   async function handleSoftDelete(id: string) {
@@ -81,9 +105,7 @@ export default function NotesPage() {
     setConfirmId(null);
   }
 
-  function handleDragStart(noteId: string) {
-    setDraggedId(noteId);
-  }
+  function handleDragStart(noteId: string) { setDraggedId(noteId); }
 
   function handleDragOver(noteId: string) {
     if (draggedId && draggedId !== noteId) setDragOverId(noteId);
@@ -109,9 +131,7 @@ export default function NotesPage() {
     setDraggedId(null); setDragOverId(null);
   }
 
-  function handleDragEnd() {
-    setDraggedId(null); setDragOverId(null);
-  }
+  function handleDragEnd() { setDraggedId(null); setDragOverId(null); }
 
   function renderCards(group: Note[]) {
     return group.map(note => (
@@ -130,6 +150,7 @@ export default function NotesPage() {
       >
         <NoteCard
           note={note}
+          folder={note.folder_id ? (folderMap.get(note.folder_id) ?? null) : null}
           variant="default"
           onEdit={() => handleEdit(note)}
           onPin={() => pinNote(note.id)}
@@ -164,6 +185,24 @@ export default function NotesPage() {
         </div>
       </div>
 
+      {/* Active folder banner */}
+      {activeFolder && (
+        <div
+          className={styles.folderBanner}
+          style={{ borderLeftColor: activeFolder.color || '#6366f1' }}
+        >
+          <span className={styles.folderBannerIcon}>{activeFolder.icon || '📁'}</span>
+          <span className={styles.folderBannerName}>{activeFolder.name}</span>
+          <button
+            className={styles.folderBannerClear}
+            onClick={() => navigate('/')}
+            title="Quitar filtro de carpeta"
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
       {loading && (
         <div className={styles.grid}>
           {Array.from({ length: 6 }).map((_, i) => (
@@ -174,13 +213,19 @@ export default function NotesPage() {
 
       {!loading && notes.length === 0 && (
         <div className={styles.empty}>
-          <div className={styles.emptyIcon}>📝</div>
+          <div className={styles.emptyIcon}>{activeFolder ? activeFolder.icon || '📁' : '📝'}</div>
           <h2 className={styles.emptyTitle}>
-            {search ? 'Sin resultados' : 'Sin notas todavía'}
+            {search
+              ? 'Sin resultados'
+              : activeFolder
+              ? `Sin notas en "${activeFolder.name}"`
+              : 'Sin notas todavía'}
           </h2>
           <p className={styles.emptyText}>
             {search
               ? `No se encontraron notas con "${search}"`
+              : activeFolder
+              ? 'Crea una nota con el botón de arriba para añadirla a esta carpeta.'
               : 'Crea tu primera nota pulsando el botón de arriba.'}
           </p>
         </div>
@@ -207,6 +252,7 @@ export default function NotesPage() {
       {noteModal !== null && (
         <NoteModal
           note={noteModal === 'new' ? null : noteModal}
+          defaultFolderId={noteModal === 'new' ? (folderId ?? null) : undefined}
           onClose={handleCloseModal}
           onCreate={createNote}
           onUpdate={updateNote}

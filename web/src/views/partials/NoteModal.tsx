@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import type { Note, NoteColor, Tag } from '../../types';
-import { tagsService } from '../../services/api';
+import type { Folder, Note, NoteColor, Tag } from '../../types';
+import { foldersService, tagsService } from '../../services/api';
 import styles from './NoteModal.module.css';
 
 interface ColorOption { value: NoteColor; label: string; dot: string }
@@ -18,18 +18,21 @@ const COLORS: ColorOption[] = [
 
 export interface NoteModalProps {
   note?: Note | null;
+  defaultFolderId?: string | null;
   onClose: () => void;
-  onCreate: (data: { title: string; content?: string; color?: NoteColor }) => Promise<Note>;
-  onUpdate: (id: string, data: Partial<Pick<Note, 'title' | 'content' | 'color'>>) => Promise<Note>;
+  onCreate: (data: { title: string; content?: string; color?: NoteColor; folder_id?: string | null }) => Promise<Note>;
+  onUpdate: (id: string, data: Partial<Pick<Note, 'title' | 'content' | 'color' | 'folder_id'>>) => Promise<Note>;
 }
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
-export default function NoteModal({ note: initialNote, onClose, onCreate, onUpdate }: NoteModalProps) {
+export default function NoteModal({ note: initialNote, defaultFolderId, onClose, onCreate, onUpdate }: NoteModalProps) {
   const [note,       setNote]       = useState<Note | null>(initialNote ?? null);
   const [title,      setTitle]      = useState(initialNote?.title    ?? '');
   const [content,    setContent]    = useState(initialNote?.content  ?? '');
   const [color,      setColor]      = useState<NoteColor>(initialNote?.color ?? 'default');
+  const [folderId,   setFolderId]   = useState<string | null>(initialNote?.folder_id ?? defaultFolderId ?? null);
+  const [folders,    setFolders]    = useState<Folder[]>([]);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
   const [creating,   setCreating]   = useState(false);
 
@@ -44,6 +47,7 @@ export default function NoteModal({ note: initialNote, onClose, onCreate, onUpda
   const isEdit       = note !== null;
 
   useEffect(() => {
+    foldersService.getAll().then(setFolders).catch(() => {});
     tagsService.getAll().then(setAvailableTags).catch(() => {});
   }, []);
 
@@ -102,6 +106,16 @@ export default function NoteModal({ note: initialNote, onClose, onCreate, onUpda
     }
   }
 
+  async function handleFolderChange(newFolderId: string | null) {
+    setFolderId(newFolderId);
+    if (note) {
+      try {
+        const updated = await onUpdate(note.id, { folder_id: newFolderId });
+        setNote(updated);
+      } catch { /* silent */ }
+    }
+  }
+
   async function handleToggleTag(tagId: string) {
     const isSelected = selectedTagIds.has(tagId);
     if (note) {
@@ -121,7 +135,7 @@ export default function NoteModal({ note: initialNote, onClose, onCreate, onUpda
     if (!title.trim() && !content.trim()) return;
     setCreating(true);
     try {
-      const created = await onCreate({ title, content, color });
+      const created = await onCreate({ title, content, color, folder_id: folderId });
       setNote(created);
       for (const tagId of selectedTagIds) {
         await tagsService.addToNote(created.id, tagId);
@@ -205,6 +219,23 @@ export default function NoteModal({ note: initialNote, onClose, onCreate, onUpda
               />
             ))}
           </div>
+
+          {folders.length > 0 && (
+            <select
+              id="note-modal-folder"
+              className={styles.folderSelect}
+              value={folderId ?? ''}
+              onChange={e => handleFolderChange(e.target.value || null)}
+              title="Carpeta"
+            >
+              <option value="">📂 Sin carpeta</option>
+              {folders.map(f => (
+                <option key={f.id} value={f.id}>
+                  {f.icon} {f.name}
+                </option>
+              ))}
+            </select>
+          )}
 
           {availableTags.length > 0 && (
             <div className={styles.tagPickerWrap} ref={tagPickerRef}>

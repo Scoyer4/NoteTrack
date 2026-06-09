@@ -199,6 +199,51 @@
   color: var(--text-muted);
 }
 
+/* ── Folder banner (active folder filter indicator) ──────────────────────────── */
+
+.folderBanner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left-width: 3px;
+  border-radius: var(--radius);
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  animation: pageIn 0.15s ease;
+}
+
+.folderBannerIcon {
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.folderBannerName {
+  font-weight: 600;
+  color: var(--text);
+  flex: 1;
+}
+
+.folderBannerClear {
+  background: transparent;
+  border: none;
+  color: var(--text-faint);
+  font-size: 0.75rem;
+  cursor: pointer;
+  padding: 3px 6px;
+  border-radius: var(--radius-sm);
+  line-height: 1;
+  transition: background 0.12s, color 0.12s;
+  flex-shrink: 0;
+}
+
+.folderBannerClear:hover {
+  background: rgba(255, 255, 255, 0.07);
+  color: var(--text-muted);
+}
+
 /* ── Drag and drop ───────────────────────────────────────────────────────────── */
 
 .draggable {

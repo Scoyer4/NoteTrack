@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import type { Note, NoteColor, Task } from '../../types';
+import type { Folder, Note, NoteColor, Task } from '../../types';
 import { CHECKLIST_MARKER } from '../../types';
 import { tasksService } from '../../services/api';
 import styles from './NoteCard.module.css';
@@ -31,6 +31,7 @@ export type CardVariant = 'default' | 'archived' | 'trash';
 interface Props {
   note: Note;
   variant?: CardVariant;
+  folder?: Folder | null;
   onEdit?: () => void;
   onPin?: () => void;
   onArchive?: () => void;
@@ -43,6 +44,7 @@ interface Props {
 export default function NoteCard({
   note,
   variant = 'default',
+  folder,
   onEdit,
   onPin,
   onArchive,
@@ -106,6 +108,16 @@ export default function NoteCard({
           {note.title || 'Sin título'}
         </h3>
 
+        {folder && (
+          <div className={styles.folderBadge} title={folder.name}>
+            <span
+              className={styles.folderBadgeDot}
+              style={{ background: folder.color || '#6366f1' }}
+            />
+            {folder.icon && <span>{folder.icon}</span>}
+            {folder.name}
+          </div>
+        )}
         {isChecklist && tasks.length > 0 && (
           <div className={styles.taskPreview}>
             {tasks.slice(0, PREVIEW_LIMIT).map(task => (

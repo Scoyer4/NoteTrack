@@ -20,13 +20,13 @@ export function useNotes() {
     }
   }, []);
 
-  const createNote = useCallback(async (data: { title: string; content?: string; color?: NoteColor }) => {
+  const createNote = useCallback(async (data: { title: string; content?: string; color?: NoteColor; folder_id?: string | null }) => {
     const created = await notesService.create(data);
     setNotes(prev => [created, ...prev]);
     return created;
   }, []);
 
-  const updateNote = useCallback(async (id: string, data: Partial<Pick<Note, 'title' | 'content' | 'color' | 'is_pinned' | 'is_archived'>>) => {
+  const updateNote = useCallback(async (id: string, data: Partial<Pick<Note, 'title' | 'content' | 'color' | 'is_pinned' | 'is_archived' | 'folder_id'>>) => {
     const updated = await notesService.update(id, data);
     setNotes(prev => prev.map(n => n.id === id ? updated : n));
     return updated;

@@ -156,39 +156,86 @@
 }
 
 .card {
+  position: relative;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 16px;
+  border-radius: 0 var(--radius-lg) var(--radius-lg) var(--radius-lg);
+  margin-top: 10px;
+  padding: 20px 18px;
   display: flex;
   align-items: center;
   gap: 14px;
-  transition: border-color 0.15s, transform 0.15s;
+  transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
   animation: cardIn 0.2s ease both;
 }
 
-.card:hover { border-color: var(--border-light); transform: translateY(-1px); }
+.card:hover {
+  border-color: var(--folder-color);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25), 0 0 10px var(--folder-color-dim);
+}
+
+/* Tab shape representing a physical folder */
+.folderTab {
+  position: absolute;
+  top: -10px;
+  left: -1px;
+  width: 75px;
+  height: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-bottom: none;
+  border-radius: 6px 6px 0 0;
+  transition: border-color 0.2s;
+}
+
+.card:hover .folderTab {
+  border-color: var(--folder-color);
+}
+
+.folderCardMain {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex: 1;
+  background: transparent;
+  border: none;
+  padding: 0;
+  text-align: left;
+  font-family: inherit;
+  cursor: pointer;
+  width: 100%;
+}
 
 .cardIcon {
-  width: 44px;
-  height: 44px;
-  border-radius: var(--radius);
-  border: 1px solid;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-lg);
+  border: 2px solid;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.4rem;
+  font-size: 1.5rem;
+  background: var(--folder-color-dim);
   flex-shrink: 0;
+  transition: transform 0.2s;
+}
+
+.card:hover .cardIcon {
+  transform: scale(1.08) rotate(-4deg);
 }
 
 .cardInfo {
   flex: 1;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .folderName {
   display: block;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   font-weight: 600;
   color: var(--text);
   white-space: nowrap;
@@ -196,11 +243,23 @@
   text-overflow: ellipsis;
 }
 
+.folderSubtitle {
+  font-size: 0.75rem;
+  color: var(--text-faint);
+  font-weight: 500;
+}
+
 .cardActions {
   display: flex;
   align-items: center;
   gap: 6px;
   flex-shrink: 0;
+  opacity: 0.4;
+  transition: opacity 0.2s;
+}
+
+.card:hover .cardActions {
+  opacity: 1;
 }
 
 .viewBtn {
@@ -228,7 +287,7 @@
   border: none;
   border-radius: var(--radius-sm);
   color: var(--text-faint);
-  font-size: 0.7rem;
+  font-size: 0.85rem;
   cursor: pointer;
   transition: background 0.12s, color 0.12s;
 }

@@ -1,4 +1,4 @@
-import type { AuthSession, Note, Tag, Task, User, NoteColor } from '../types';
+import type { AuthSession, Folder, Note, Tag, Task, User, NoteColor } from '../types';
 
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000/api';
 
@@ -112,9 +112,9 @@ export const notesService = {
   getArchived: () => request<Note[]>('/notes/archived'),
   getDeleted:  () => request<Note[]>('/notes/deleted'),
   getById:     (id: string) => request<Note>(`/notes/${id}`),
-  create: (data: { title: string; content?: string; color?: NoteColor }) =>
+  create: (data: { title: string; content?: string; color?: NoteColor; folder_id?: string | null }) =>
     request<Note>('/notes', { method: 'POST', body: JSON.stringify(data) }),
-  update: (id: string, data: Partial<Pick<Note, 'title' | 'content' | 'color' | 'is_pinned' | 'is_archived'>>) =>
+  update: (id: string, data: Partial<Pick<Note, 'title' | 'content' | 'color' | 'is_pinned' | 'is_archived' | 'folder_id'>>) =>
     request<Note>(`/notes/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
   pin:       (id: string) => request<Note>(`/notes/${id}/pin`,     { method: 'PATCH' }),
   archive:   (id: string) => request<Note>(`/notes/${id}/archive`, { method: 'PATCH' }),
@@ -157,4 +157,16 @@ export const usersService = {
   me:     () => request<User>('/users/me'),
   update: (data: Partial<Pick<User, 'username' | 'full_name' | 'avatar_url'>>) =>
     request<{ user: User }>('/users/me', { method: 'PATCH', body: JSON.stringify(data) }),
+};
+
+// ── Folders ───────────────────────────────────────────────────────────────────
+
+export const foldersService = {
+  getAll:  () => request<Folder[]>('/folders'),
+  getById: (id: string) => request<Folder>(`/folders/${id}`),
+  create:  (data: { name: string; color?: string; icon?: string }) =>
+    request<Folder>('/folders', { method: 'POST', body: JSON.stringify(data) }),
+  update:  (id: string, data: Partial<Pick<Folder, 'name' | 'color' | 'icon'>>) =>
+    request<Folder>(`/folders/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+  remove:  (id: string) => request<void>(`/folders/${id}`, { method: 'DELETE' }),
 };
