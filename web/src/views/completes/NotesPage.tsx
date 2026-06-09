@@ -2,9 +2,10 @@ import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useNotes } from '../../controllers/useNotes';
 import { useFolders } from '../../controllers/useFolders';
-import NoteCard      from '../partials/NoteCard';
-import NoteModal     from '../partials/NoteModal';
-import ConfirmDialog from '../partials/ConfirmDialog';
+import NoteCard        from '../partials/NoteCard';
+import NoteModal       from '../partials/NoteModal';
+import TaskListModal   from '../partials/TaskListModal';
+import ConfirmDialog   from '../partials/ConfirmDialog';
 import type { Note } from '../../types';
 import { CHECKLIST_MARKER } from '../../types';
 import styles from './NotesPage.module.css';
@@ -34,8 +35,15 @@ export default function NotesPage() {
     [folders],
   );
 
+  // Modal de notas normales
   const [noteModal, setNoteModal] = useState<Note | 'new' | null>(null);
+  // Modal de listas de tareas
+  const [listModal, setListModal] = useState<Note | 'new' | null>(null);
+
   const [confirmId, setConfirmId] = useState<string | null>(null);
+
+  type FilterTab = 'all' | 'notes' | 'lists';
+  const [activeTab, setActiveTab] = useState<FilterTab>('all');
 
   const [search, setSearch] = useState('');
   const searchDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -49,10 +57,8 @@ export default function NotesPage() {
   const [draggedId,  setDraggedId]  = useState<string | null>(null);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
 
-  // Load folders once on mount
   useEffect(() => { fetchFolders(); }, [fetchFolders]);
 
-  // Reload notes when folderId or component mounts
   useEffect(() => {
     fetchNotes(folderId ? { folderId } : undefined);
   }, [fetchNotes, folderId]);
@@ -80,8 +86,19 @@ export default function NotesPage() {
     return [...map.values(), ...result];
   }, [notes, localOrder]);
 
-  const pinned  = orderedNotes.filter(n => n.is_pinned  && n.content !== CHECKLIST_MARKER);
-  const regular = orderedNotes.filter(n => !n.is_pinned && n.content !== CHECKLIST_MARKER);
+  const pinned = orderedNotes.filter(n => {
+    if (!n.is_pinned) return false;
+    if (activeTab === 'notes') return n.content !== CHECKLIST_MARKER;
+    if (activeTab === 'lists') return n.content === CHECKLIST_MARKER;
+    return true;
+  });
+
+  const regular = orderedNotes.filter(n => {
+    if (n.is_pinned) return false;
+    if (activeTab === 'notes') return n.content !== CHECKLIST_MARKER;
+    if (activeTab === 'lists') return n.content === CHECKLIST_MARKER;
+    return true;
+  });
 
   const handleSearch = useCallback((value: string) => {
     setSearch(value);
@@ -91,12 +108,18 @@ export default function NotesPage() {
     }, 300);
   }, [fetchNotes, folderId]);
 
+  // ← CAMBIO: abre el modal correcto según el tipo de nota
   function handleEdit(note: Note) {
-    setNoteModal(note);
+    if (note.content === CHECKLIST_MARKER) {
+      setListModal(note);
+    } else {
+      setNoteModal(note);
+    }
   }
 
   function handleCloseModal() {
     setNoteModal(null);
+    setListModal(null);
     fetchNotes(folderId ? { folderId } : search ? { search } : undefined);
   }
 
@@ -182,10 +205,40 @@ export default function NotesPage() {
           >
             + Nueva nota
           </button>
+          {/* ← CAMBIO: botón de nueva lista aquí */}
+          <button
+            className={styles.newListBtn}
+            onClick={() => setListModal('new')}
+          >
+            ☑ Nueva lista
+          </button>
         </div>
       </div>
 
-      {/* Active folder banner */}
+      {/* Filter tabs */}
+      {!folderId && (
+        <div className={styles.filterTabs}>
+          <button
+            className={`${styles.filterTab} ${activeTab === 'all'   ? styles.filterTabActive : ''}`}
+            onClick={() => setActiveTab('all')}
+          >
+            Todas
+          </button>
+          <button
+            className={`${styles.filterTab} ${activeTab === 'notes' ? styles.filterTabActive : ''}`}
+            onClick={() => setActiveTab('notes')}
+          >
+            📝 Notas
+          </button>
+          <button
+            className={`${styles.filterTab} ${activeTab === 'lists' ? styles.filterTabActive : ''}`}
+            onClick={() => setActiveTab('lists')}
+          >
+            ☑ Listas
+          </button>
+        </div>
+      )}
+
       {activeFolder && (
         <div
           className={styles.folderBanner}
@@ -249,10 +302,21 @@ export default function NotesPage() {
         </section>
       )}
 
+      {/* Modal de nota normal */}
       {noteModal !== null && (
         <NoteModal
           note={noteModal === 'new' ? null : noteModal}
           defaultFolderId={noteModal === 'new' ? (folderId ?? null) : undefined}
+          onClose={handleCloseModal}
+          onCreate={createNote}
+          onUpdate={updateNote}
+        />
+      )}
+
+      {/* Modal de lista de tareas */}
+      {listModal !== null && (
+        <TaskListModal
+          note={listModal === 'new' ? null : listModal}
           onClose={handleCloseModal}
           onCreate={createNote}
           onUpdate={updateNote}

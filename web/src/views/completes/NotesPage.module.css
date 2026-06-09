@@ -199,6 +199,23 @@
   color: var(--text-muted);
 }
 
+.newListBtn {
+  background: transparent;
+  border: 1px solid var(--brand);
+  color: var(--brand);
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.newListBtn:hover {
+  background: var(--brand);
+  color: #fff;
+}
+
 /* ── Folder banner (active folder filter indicator) ──────────────────────────── */
 
 .folderBanner {
@@ -263,6 +280,43 @@
 
 .dragOver {
   outline-color: var(--primary);
+}
+
+/* ── Filter tabs ─────────────────────────────────────────────────────────────── */
+
+.filterTabs {
+  display: flex;
+  gap: 4px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 4px;
+  width: fit-content;
+}
+
+.filterTab {
+  padding: 6px 16px;
+  border: none;
+  border-radius: calc(var(--radius) - 2px);
+  background: transparent;
+  color: var(--text-faint);
+  font-size: 0.82rem;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+
+.filterTab:hover {
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.filterTabActive {
+  background: var(--primary);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);
 }
 
 /* ── Animations ──────────────────────────────────────────────────────────────── */

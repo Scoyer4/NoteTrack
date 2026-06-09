@@ -1,5 +1,7 @@
-import { NavLink, useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { NavLink, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useFolders } from '../../controllers/useFolders';
 import styles from './Sidebar.module.css';
 
 const navMain = [
@@ -9,20 +11,15 @@ const navMain = [
   { to: '/trash',    label: 'Papelera' },
 ];
 
-const navTasks = [
-  { to: '/lists',    label: 'Mis listas' },
-  { to: '/calendar', label: 'Calendario' },
-];
-
-const navOrg = [
-  { to: '/folders', label: 'Carpetas' },
-  { to: '/tags', label: 'Etiquetas' },
-];
-
-
 export default function Sidebar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const { folders, fetchFolders } = useFolders();
+
+  const [searchParams] = useSearchParams();
+  const activeFolderId = searchParams.get('folderId');
+
+  useEffect(() => { fetchFolders(); }, [fetchFolders]);
 
   async function handleLogout() {
     await logout();
@@ -48,7 +45,8 @@ export default function Sidebar() {
               to={item.to}
               end={item.end}
               className={({ isActive }) =>
-                `${styles.navItem} ${isActive ? styles.active : ''}`
+                // ← si hay folderId activo, "Todas las notas" no se marca
+                `${styles.navItem} ${isActive && !activeFolderId ? styles.active : ''}`
               }
             >
               {item.label}
@@ -60,34 +58,54 @@ export default function Sidebar() {
       <div className={styles.navSection}>
         <span className={styles.label}>Tareas</span>
         <nav>
-          {navTasks.map(item => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              className={({ isActive }) =>
-                `${styles.navItem} ${isActive ? styles.active : ''}`
-              }
-            >
-              {item.label}
-            </NavLink>
-          ))}
+          <NavLink
+            to="/calendar"
+            className={({ isActive }) =>
+              `${styles.navItem} ${isActive ? styles.active : ''}`
+            }
+          >
+            Calendario
+          </NavLink>
         </nav>
       </div>
 
       <div className={styles.navSection}>
         <span className={styles.label}>Organizar</span>
         <nav>
-          {navOrg.map(item => (
+          <NavLink
+            to="/tags"
+            className={({ isActive }) =>
+              `${styles.navItem} ${isActive ? styles.active : ''}`
+            }
+          >
+            Etiquetas
+          </NavLink>
+
+          {folders.map(folder => (
             <NavLink
-              key={item.to}
-              to={item.to}
-              className={({ isActive }) =>
-                `${styles.navItem} ${isActive ? styles.active : ''}`
+              key={folder.id}
+              to={`/?folderId=${folder.id}`}
+              className={() =>
+                `${styles.navItem} ${activeFolderId === folder.id ? styles.active : ''}`
               }
             >
-              {item.label}
+              <span
+                className={styles.folderDot}
+                style={{ background: folder.color }}
+              />
+              {folder.name}
             </NavLink>
           ))}
+
+          <NavLink
+            to="/folders"
+            className={({ isActive }) =>
+              `${styles.navItem} ${isActive ? styles.active : ''}`
+            }
+          >
+            + Gestionar carpetas
+          </NavLink>
+
         </nav>
       </div>
 

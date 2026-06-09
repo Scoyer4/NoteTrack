@@ -12,6 +12,15 @@
   border-right: 1px solid rgba(139, 92, 246, 0.1);
 }
 
+.folderDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: inline-block;
+  margin-right: 6px;
+}
+
 /* ── Top ───────────────────────────────────────────────────────────────────── */
 
 .top {
