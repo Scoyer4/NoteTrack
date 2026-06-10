@@ -58,6 +58,7 @@ export default function CalendarPage() {
           locale="es"
           events={events}
           eventClick={handleEventClick}
+          displayEventTime={false}
           height="auto"
           headerToolbar={{
             left:   'prev,next today',

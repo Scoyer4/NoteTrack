@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useNotes } from '../../controllers/useNotes';
 import { useFolders } from '../../controllers/useFolders';
+import { notesService } from '../../services/api';
 import NoteCard        from '../partials/NoteCard';
 import NoteModal       from '../partials/NoteModal';
 import TaskListModal   from '../partials/TaskListModal';
@@ -59,6 +60,29 @@ export default function NotesPage() {
   const [dragOverId, setDragOverId] = useState<string | null>(null);
 
   useEffect(() => { fetchFolders(); }, [fetchFolders]);
+
+  useEffect(() => {
+    const listId = searchParams.get('list');
+    const noteId = searchParams.get('note');
+
+    if (listId) {
+      notesService.getById(listId)
+        .then(note => {
+          if (note.content === CHECKLIST_MARKER) {
+            setListModal(note);
+          }
+        })
+        .catch(err => console.error("Error fetching list note:", err));
+    } else if (noteId) {
+      notesService.getById(noteId)
+        .then(note => {
+          if (note.content !== CHECKLIST_MARKER) {
+            setNoteModal(note);
+          }
+        })
+        .catch(err => console.error("Error fetching note:", err));
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     if (tagId) {
@@ -135,6 +159,15 @@ export default function NotesPage() {
   function handleCloseModal() {
     setNoteModal(null);
     setListModal(null);
+
+    // Limpiar parámetros query 'list' y 'note' de la URL
+    const newParams = new URLSearchParams(searchParams);
+    if (newParams.has('list') || newParams.has('note')) {
+      newParams.delete('list');
+      newParams.delete('note');
+      navigate({ search: newParams.toString() }, { replace: true });
+    }
+
     fetchNotes(folderId ? { folderId } : search ? { search } : undefined);
   }
 
