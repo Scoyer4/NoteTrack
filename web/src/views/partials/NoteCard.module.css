@@ -40,6 +40,7 @@
 .body {
   flex: 1;
   overflow: hidden;
+  max-height: 360px;
 }
 
 .title {
@@ -58,11 +59,18 @@
   font-size: 0.8rem;
   color: var(--text-muted);
   line-height: 1.55;
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-line-clamp: 4;
-  -webkit-box-orient: vertical;
 }
+
+.preview p  { margin: 0 0 2px; }
+.preview h1 { font-size: 0.95rem; font-weight: 700; color: var(--text); margin: 0 0 3px; }
+.preview h2 { font-size: 0.87rem; font-weight: 600; color: var(--text); margin: 0 0 3px; }
+.preview strong { font-weight: 700; color: var(--text); }
+.preview em { font-style: italic; }
+.preview u  { text-decoration: underline; }
+.preview s  { text-decoration: line-through; }
+.preview ol,
+.preview ul { padding-left: 16px; margin: 0; }
+.preview li { margin-bottom: 1px; }
 
 /* ── Tag chips ──────────────────────────────────────────────────────────────── */
 

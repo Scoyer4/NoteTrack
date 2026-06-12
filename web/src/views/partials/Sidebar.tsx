@@ -68,16 +68,16 @@ export default function Sidebar() {
         <span className={styles.label}>Organizar</span>
         <nav>
 
-          {tags.map(tag => (
-            <button
-              key={tag.id}
-              className={`${styles.navBtn} ${styles.navItem} ${activeTagId === tag.id ? styles.active : ''}`}
-              onClick={() => navigate(activeTagId === tag.id ? '/' : `/?tagId=${tag.id}`)}
-            >
-              <span className={styles.folderDot} style={{ background: tag.color }} />
-              {tag.name}
-            </button>
-          ))}
+          <NavLink
+            to="/folders"
+            className={({ isActive }) =>
+              `${styles.navItem} ${isActive ? styles.active : ''}`
+            }
+          >
+            Carpetas
+          </NavLink>
+
+          <div className={styles.divider} />
 
           <NavLink
             to="/tags"
@@ -88,16 +88,16 @@ export default function Sidebar() {
             + Gestionar etiquetas
           </NavLink>
 
-          <div className={styles.divider} />
-
-          <NavLink
-            to="/folders"
-            className={({ isActive }) =>
-              `${styles.navItem} ${isActive ? styles.active : ''}`
-            }
-          >
-            Carpetas
-          </NavLink>
+          {tags.map(tag => (
+            <button
+              key={tag.id}
+              className={`${styles.navBtn} ${styles.navItem} ${activeTagId === tag.id ? styles.active : ''}`}
+              onClick={() => navigate(activeTagId === tag.id ? '/' : `/?tagId=${tag.id}`)}
+            >
+              <span className={styles.folderDot} style={{ background: tag.color }} />
+              {tag.name}
+            </button>
+          ))}
 
         </nav>
       </div>

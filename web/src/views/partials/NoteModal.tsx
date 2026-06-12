@@ -63,10 +63,12 @@ export default function NoteModal({ note: initialNote, defaultFolderId, onClose,
   const [selectedTagIds, setSelectedTagIds] = useState<Set<string>>(
     new Set(initialNote?.tags?.map(t => t.id) ?? [])
   );
-  const [showTagPicker, setShowTagPicker] = useState(false);
+  const [showTagPicker,    setShowTagPicker]    = useState(false);
+  const [showFolderPicker, setShowFolderPicker] = useState(false);
 
-  const debounceRef  = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const tagPickerRef = useRef<HTMLDivElement>(null);
+  const debounceRef    = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const tagPickerRef   = useRef<HTMLDivElement>(null);
+  const folderPickerRef = useRef<HTMLDivElement>(null);
   const isEdit       = note !== null;
 
   useEffect(() => {
@@ -90,6 +92,17 @@ export default function NoteModal({ note: initialNote, defaultFolderId, onClose,
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, [showTagPicker]);
+
+  useEffect(() => {
+    if (!showFolderPicker) return;
+    function handler(e: MouseEvent) {
+      if (folderPickerRef.current && !folderPickerRef.current.contains(e.target as Node)) {
+        setShowFolderPicker(false);
+      }
+    }
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [showFolderPicker]);
 
   useEffect(() => () => { if (debounceRef.current) clearTimeout(debounceRef.current); }, []);
 
@@ -233,7 +246,7 @@ export default function NoteModal({ note: initialNote, defaultFolderId, onClose,
         {selectedTagIds.size > 0 && (
           <div className={styles.tagChips}>
             {availableTags.filter(t => selectedTagIds.has(t.id)).map(tag => (
-              <span key={tag.id} className={styles.tagChip} style={{ borderColor: tag.color }}>
+              <span key={tag.id} className={styles.tagChip} style={{ '--chip-color': tag.color } as React.CSSProperties}>
                 {tag.name}
                 <button className={styles.tagChipRemove} onClick={() => handleToggleTag(tag.id)}>✕</button>
               </span>
@@ -256,49 +269,70 @@ export default function NoteModal({ note: initialNote, defaultFolderId, onClose,
             ))}
           </div>
 
-          {folders.length > 0 && (
-            <select
-              id="note-modal-folder"
-              className={styles.folderSelect}
-              value={folderId ?? ''}
-              onChange={e => handleFolderChange(e.target.value || null)}
-              title="Carpeta"
-            >
-              <option value="">Sin carpeta</option>
-              {folders.map(f => (
-                <option key={f.id} value={f.id}>
-                  {f.icon} {f.name}
-                </option>
-              ))}
-            </select>
-          )}
-
-          {availableTags.length > 0 && (
-            <div className={styles.tagPickerWrap} ref={tagPickerRef}>
-              <button
-                className={styles.tagPickerBtn}
-                onClick={() => setShowTagPicker(p => !p)}
-                title="Etiquetas"
-              >
-                Etiquetas
-              </button>
-              {showTagPicker && (
-                <div className={styles.tagDropdown}>
-                  {availableTags.map(tag => (
+          <div className={styles.pickerGroup}>
+            {folders.length > 0 && (
+              <div className={styles.tagPickerWrap} ref={folderPickerRef}>
+                <button
+                  className={styles.tagPickerBtn}
+                  onClick={() => setShowFolderPicker(p => !p)}
+                  title="Carpeta"
+                >
+                  {folderId
+                    ? (() => { const f = folders.find(f => f.id === folderId); return f ? `${f.icon} ${f.name}` : 'Carpeta'; })()
+                    : 'Carpeta'}
+                </button>
+                {showFolderPicker && (
+                  <div className={styles.tagDropdown}>
                     <button
-                      key={tag.id}
-                      className={`${styles.tagOption} ${selectedTagIds.has(tag.id) ? styles.tagOptionActive : ''}`}
-                      onClick={() => handleToggleTag(tag.id)}
+                      className={`${styles.tagOption} ${!folderId ? styles.tagOptionActive : ''}`}
+                      onClick={() => { handleFolderChange(null); setShowFolderPicker(false); }}
                     >
-                      <span className={styles.tagOptionDot} style={{ background: tag.color }} />
-                      {tag.name}
-                      {selectedTagIds.has(tag.id) && <span className={styles.tagOptionCheck}>✓</span>}
+                      Sin carpeta
+                      {!folderId && <span className={styles.tagOptionCheck}>✓</span>}
                     </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
+                    {folders.map(f => (
+                      <button
+                        key={f.id}
+                        className={`${styles.tagOption} ${folderId === f.id ? styles.tagOptionActive : ''}`}
+                        onClick={() => { handleFolderChange(f.id); setShowFolderPicker(false); }}
+                      >
+                        <span>{f.icon}</span>
+                        {f.name}
+                        {folderId === f.id && <span className={styles.tagOptionCheck}>✓</span>}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {availableTags.length > 0 && (
+              <div className={styles.tagPickerWrap} ref={tagPickerRef}>
+                <button
+                  className={styles.tagPickerBtn}
+                  onClick={() => setShowTagPicker(p => !p)}
+                  title="Etiquetas"
+                >
+                  Etiquetas
+                </button>
+                {showTagPicker && (
+                  <div className={styles.tagDropdown}>
+                    {availableTags.map(tag => (
+                      <button
+                        key={tag.id}
+                        className={`${styles.tagOption} ${selectedTagIds.has(tag.id) ? styles.tagOptionActive : ''}`}
+                        onClick={() => handleToggleTag(tag.id)}
+                      >
+                        <span className={styles.tagOptionDot} style={{ background: tag.color }} />
+                        {tag.name}
+                        {selectedTagIds.has(tag.id) && <span className={styles.tagOptionCheck}>✓</span>}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Create button — only in create mode */}

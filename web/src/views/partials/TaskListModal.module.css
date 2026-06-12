@@ -97,13 +97,13 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  padding: 3px 8px 3px 10px;
-  border: 1px solid;
+  padding: 3px 10px 3px 10px;
+  border: 1.5px solid var(--chip-color, #71717a);
   border-radius: 20px;
-  font-size: 0.72rem;
-  font-weight: 500;
-  color: var(--text-muted);
-  background: var(--surface-2);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--chip-color, #a1a1aa);
+  background: color-mix(in srgb, var(--chip-color, #71717a) 15%, transparent);
 }
 
 .tagChipRemove {
@@ -204,23 +204,17 @@
   flex-shrink: 0;
 }
 
-.createRow {
-  padding: 12px 16px;
-  display: flex;
-  justify-content: flex-end;
-  border-top: 1px solid var(--border);
-}
-
 .createBtn {
-  padding: 8px 20px;
+  padding: 6px 14px;
   background: linear-gradient(135deg, #9333ea, #7c3aed);
   border: none;
-  border-radius: var(--radius);
+  border-radius: var(--radius-sm);
   color: #fff;
-  font-size: 0.875rem;
+  font-size: 0.8rem;
   font-weight: 600;
   font-family: inherit;
   cursor: pointer;
+  white-space: nowrap;
   transition: opacity 0.15s;
 }
 
@@ -362,20 +356,43 @@
 }
 
 /* Tag picker */
+.pickerGroup {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .tagPickerWrap { position: relative; }
 
 .tagPickerBtn {
-  background: transparent;
-  border: none;
-  font-size: 0.95rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-light, rgba(255,255,255,0.12));
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 500;
+  font-family: inherit;
   cursor: pointer;
-  padding: 4px 6px;
+  padding: 5px 10px;
   border-radius: var(--radius-sm);
   line-height: 1;
-  transition: background 0.12s;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+  white-space: nowrap;
 }
 
-.tagPickerBtn:hover { background: rgba(255, 255, 255, 0.06); }
+.tagPickerBtn::after {
+  content: '▾';
+  font-size: 0.7rem;
+  opacity: 0.6;
+}
+
+.tagPickerBtn:hover {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.22);
+  color: var(--text);
+}
 
 .tagDropdown {
   position: absolute;
@@ -422,6 +439,17 @@
   font-size: 0.7rem;
   color: var(--primary);
   font-weight: 600;
+}
+
+/* Action row (create mode) */
+.actionRow {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 10px 16px 12px;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
 }
 
 /* Close button in toolbar */

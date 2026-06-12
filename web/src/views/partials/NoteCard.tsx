@@ -83,8 +83,8 @@ export default function NoteCard({
     day: 'numeric', month: 'short',
   });
 
-  const preview = !isChecklist && note.content
-    ? note.content.replace(/<[^>]*>/g, '').slice(0, 160) + (note.content.replace(/<[^>]*>/g, '').length > 160 ? '…' : '')
+  const preview = !isChecklist && note.content && note.content !== '<p><br></p>'
+    ? note.content
     : null;
 
   const PREVIEW_LIMIT = 5;
@@ -143,7 +143,12 @@ export default function NoteCard({
           </div>
         )}
 
-        {preview && <p className={styles.preview}>{preview}</p>}
+        {preview && (
+          <div
+            className={styles.preview}
+            dangerouslySetInnerHTML={{ __html: preview }}
+          />
+        )}
 
         {note.tags && note.tags.length > 0 && (
           <div className={styles.tagChips}>
